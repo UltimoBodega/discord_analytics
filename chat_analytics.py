@@ -11,14 +11,14 @@ with open(filename, 'r', encoding="utf8") as f:
     chatlog = soup.find_all('div', class_='chatlog__messages')
     char_count = defaultdict(int)
     word_dict = defaultdict(int)
-    all_words = []
+    word_counter = defaultdict(int)
     for i in range(len(chatlog)):
         person = chatlog[i].find_all('span', class_='chatlog__author-name')[0].get_text()
         for message in chatlog[i].find_all('span', class_='preserve-whitespace'):
             char_count[person] = char_count[person] + len(message.get_text())
             word_dict[person] = word_dict[person] + len(message.get_text().split())
-            
-            all_words = all_words + message.get_text().split()
+            for w in message.get_text().split():
+                word_counter[w] += 1
 
     plt.bar(char_count.keys(), char_count.values(), color='g',label='Character count')
     plt.bar(word_dict.keys(), word_dict.values(), color='r',label='Word count')
@@ -26,12 +26,6 @@ with open(filename, 'r', encoding="utf8") as f:
     plt.grid()
     plt.legend()
     
-    word_counter = {}
-    for word in all_words:
-        if word in word_counter:
-            word_counter[word] += 1
-        else:
-            word_counter[word] = 1
     popular_words = sorted(word_counter, key = word_counter.get, reverse = True)
     tops = popular_words[:show_top]
     for p, count in sorted(char_count.items(), key=lambda item: item[1], reverse=True):
