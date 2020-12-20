@@ -50,7 +50,7 @@ class Discord_Analytics():
     def compute_chat_analytics(self, plotting=False):
         """
         Computes chat analytics.
-
+        
         Computes rank of words and characters used by users.
         """
 
@@ -78,7 +78,7 @@ class Discord_Analytics():
             popular_words = sorted(word_counter, key = word_counter.get, reverse = True)
             tops = popular_words[:self.show_top]
 
-            output_str = ""
+            output_str = "```"
 
             for p, count in sorted(char_count.items(), key=lambda item: item[1], reverse=True):
                 if 'bot' in p:
@@ -91,4 +91,5 @@ class Discord_Analytics():
             if plotting:
                 plt.show()
 
+            output_str = output_str + '```'
             return output_str
