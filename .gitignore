@@ -127,3 +127,4 @@ config/
 
 devops_tasks/config.json
 *.bat
+*.json
