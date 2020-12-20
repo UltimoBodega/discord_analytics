@@ -1,0 +1,5 @@
+{
+    "token" : "something.goes.here-something",
+    "channel_id": "numbers",
+    "discord_chat_cli": "C:/Users/Something/DiscordChatExporter.Cli.exe"
+}
