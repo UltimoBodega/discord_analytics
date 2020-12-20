@@ -43,7 +43,7 @@ class Discord_Analytics():
         """
         Downloads chat messages, once per hour
         """
-        if(time.time() - self.last_fetch_timestamp > 3600)
+        if(time.time() - self.last_fetch_timestamp > 3600):
             self.last_fetch_timestamp = time.time()
             subprocess.call(self.export_cmd)
 
