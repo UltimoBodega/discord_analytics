@@ -77,6 +77,8 @@ class Discord_Analytics():
             output_str = ""
 
             for p, count in sorted(char_count.items(), key=lambda item: item[1], reverse=True):
+                if 'bot' in p:
+                    continue
                 print(f"El {p}: {count}")
                 output_str = output_str + f"El {p}: {count}" + '\n'
             for i in range(len(tops)):
