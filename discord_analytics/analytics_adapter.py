@@ -34,6 +34,7 @@ class Discord_Analytics():
         self.discord_chat_cli = config_dict["discord_chat_cli"]
         self.channel_id = config_dict["channel_id"]
         self.token = config_dict["token"]
+        self.bot_token = config_dict["bot_token"]
         self.export_cmd = self.discord_chat_cli+' export -t '+self.token+' -c '+self.channel_id+' -o '+str(self.adapter_path)+'\\'+self.export_filename
 
     def download_chat_messages(self):
@@ -72,10 +73,16 @@ class Discord_Analytics():
             
             popular_words = sorted(word_counter, key = word_counter.get, reverse = True)
             tops = popular_words[:self.show_top]
+
+            output_str = ""
+
             for p, count in sorted(char_count.items(), key=lambda item: item[1], reverse=True):
                 print(f"El {p}: {count}")
+                output_str = output_str + f"El {p}: {count}" + '\n'
             for i in range(len(tops)):
                 print(f"#{i}: {tops[i]}, ocurrances: {word_counter[tops[i]]}")
 
             if plotting:
                 plt.show()
+
+            return output_str

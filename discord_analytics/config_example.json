@@ -1,5 +1,6 @@
 {
     "token" : "something.goes.here-something",
+    "bot_token": "x.y.z",
     "channel_id": "numbers",
     "discord_chat_cli": "C:/Users/Something/DiscordChatExporter.Cli.exe"
 }
