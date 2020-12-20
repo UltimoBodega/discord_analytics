@@ -1,6 +1,7 @@
 import pathlib
 import subprocess
 import json
+import time
 from bs4 import BeautifulSoup
 import matplotlib.pyplot as plt
 from collections import defaultdict
@@ -17,6 +18,7 @@ class Discord_Analytics():
         self.show_top = show_top
         self.export_filename = 'chat_messages.html'
         self.clr = colorstr.bcolors()
+        self.last_fetch_timestamp = 0
         config_dict = None
 
         for config_path in config_paths:
@@ -39,9 +41,11 @@ class Discord_Analytics():
 
     def download_chat_messages(self):
         """
-        Downloads chat messages
+        Downloads chat messages, once per hour
         """
-        subprocess.call(self.export_cmd)
+        if(time.time() - self.last_fetch_timestamp > 3600)
+            self.last_fetch_timestamp = time.time()
+            subprocess.call(self.export_cmd)
 
     def compute_chat_analytics(self, plotting=False):
         """
