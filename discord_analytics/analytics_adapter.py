@@ -16,9 +16,9 @@ class Discord_Analytics():
         self.adapter_path = pathlib.Path(__file__).parent.absolute()
         config_paths = [str(self.adapter_path)+'\\'+config_file, config_file]
         self.show_top = show_top
-        self.export_filename = 'chat_messages.html'
         self.clr = colorstr.bcolors()
-        self.last_fetch_timestamp = 0
+        self.last_fetch_timestamp = defaultdict(int)
+        self.export_filename = defaultdict(str)
         config_dict = None
 
         for config_path in config_paths:
@@ -34,27 +34,30 @@ class Discord_Analytics():
             return
 
         self.discord_chat_cli = config_dict["discord_chat_cli"]
-        self.channel_id = config_dict["channel_id"]
         self.token = config_dict["token"]
         self.bot_token = config_dict["bot_token"]
-        self.export_cmd = self.discord_chat_cli+' export -t '+self.token+' -c '+self.channel_id+' -o '+str(self.adapter_path)+'\\'+self.export_filename
-
-    def download_chat_messages(self):
+        
+    def download_chat_messages(self, channel_id):
         """
         Downloads chat messages, once per hour
         """
-        if(time.time() - self.last_fetch_timestamp > 3600):
-            self.last_fetch_timestamp = time.time()
+        self.export_filename[channel_id] = str(channel_id)+".html"
+        self.export_cmd = self.discord_chat_cli+' export -t '+self.token+' -c '+str(channel_id)+' -o '+str(self.adapter_path)+'\\'+self.export_filename[channel_id]
+
+        print(self.export_cmd)
+
+        if(time.time() - self.last_fetch_timestamp[channel_id] > 3600):
+            self.last_fetch_timestamp[channel_id] = time.time()
             subprocess.call(self.export_cmd)
 
-    def compute_chat_analytics(self, plotting=False):
+    def compute_chat_analytics(self, channel_id, plotting=False):
         """
         Computes chat analytics.
-        
+
         Computes rank of words and characters used by users.
         """
 
-        with open(str(self.adapter_path)+'\\'+self.export_filename, 'r', encoding="utf8") as f:
+        with open(str(self.adapter_path)+'\\'+self.export_filename[channel_id], 'r', encoding="utf8") as f:
             contents = f.read()
             soup = BeautifulSoup(contents, 'lxml')
             chatlog = soup.find_all('div', class_='chatlog__messages')

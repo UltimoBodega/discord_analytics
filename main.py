@@ -11,17 +11,16 @@ client = commands.Bot(command_prefix='.')
 async def on_ready():
     print('Fierro pariente! :)')
 
-@client.command(aliases=['stats'])
-async def _stats(ctx):
-    await ctx.send(f"Voy a ocupar unos minutos, por mientras puedes ir por un cafeciiito, un paneciiito...")
-    disc_analytics.download_chat_messages()
-    output_str = disc_analytics.compute_chat_analytics()
-    await ctx.send(output_str)
-
 @client.event
 async def on_message(message):
     if message.author == client.user:
         return
+
+    if str(message.content) == ".stats":
+        await message.channel.send(f"Voy a ocupar unos minutos, por mientras puedes ir por un cafeciiito, un paneciiito...")
+        disc_analytics.download_chat_messages(message.channel.id)
+        output_str = disc_analytics.compute_chat_analytics(message.channel.id)
+        await message.channel.send(output_str)
 
     groserias = ["joto", "puto", "maricon"]
     author = str(message.author).split("#", 1)[0]
