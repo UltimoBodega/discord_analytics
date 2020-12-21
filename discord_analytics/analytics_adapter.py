@@ -59,7 +59,7 @@ class Discord_Analytics():
 
         with open(str(self.adapter_path)+'/'+self.export_filename[channel_id], 'r', encoding="utf8") as f:
             contents = f.read()
-            soup = BeautifulSoup(contents, 'lxml')
+            soup = BeautifulSoup(contents, "html.parser")
             chatlog = soup.find_all('div', class_='chatlog__messages')
             char_count = defaultdict(int)
             word_dict = defaultdict(int)
