@@ -3,7 +3,7 @@ import subprocess
 import json
 import time
 from bs4 import BeautifulSoup
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from collections import defaultdict
 from libdisc import colorstr
 
@@ -72,11 +72,11 @@ class Discord_Analytics():
                     for w in message.get_text().split():
                         word_counter[w] += 1
 
-            plt.bar(char_count.keys(), char_count.values(), color='g',label='Character count')
-            plt.bar(word_dict.keys(), word_dict.values(), color='r',label='Word count')
-            plt.xlabel("Players")
-            plt.grid()
-            plt.legend()
+            # plt.bar(char_count.keys(), char_count.values(), color='g',label='Character count')
+            # plt.bar(word_dict.keys(), word_dict.values(), color='r',label='Word count')
+            # plt.xlabel("Players")
+            # plt.grid()
+            # plt.legend()
             
             popular_words = sorted(word_counter, key = word_counter.get, reverse = True)
             tops = popular_words[:self.show_top]
@@ -92,7 +92,8 @@ class Discord_Analytics():
                 print(f"#{i}: {tops[i]}, ocurrances: {word_counter[tops[i]]}")
 
             if plotting:
-                plt.show()
+                pass
+                # plt.show()
 
             output_str = output_str + '```'
             return output_str
