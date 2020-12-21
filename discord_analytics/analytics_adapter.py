@@ -42,7 +42,7 @@ class Discord_Analytics():
         Downloads chat messages, once per hour
         """
         self.export_filename[channel_id] = str(channel_id)+".html"
-        self.export_cmd = self.discord_chat_cli+' export -t '+self.token+' -c '+str(channel_id)+' -o '+str(self.adapter_path)+'\\'+self.export_filename[channel_id]
+        self.export_cmd = self.discord_chat_cli+' export -t '+self.token+' -c '+str(channel_id)+' -o '+str(self.adapter_path)+'/'+self.export_filename[channel_id]
 
         print(self.export_cmd)
 
