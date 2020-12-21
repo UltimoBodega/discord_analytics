@@ -3,7 +3,7 @@ import subprocess
 import json
 import time
 from bs4 import BeautifulSoup
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from collections import defaultdict
 from libdisc import colorstr
 
@@ -14,7 +14,7 @@ class Discord_Analytics():
         Initializes class configuration parameters
         """
         self.adapter_path = pathlib.Path(__file__).parent.absolute()
-        config_paths = [str(self.adapter_path)+'\\'+config_file, config_file]
+        config_paths = [str(self.adapter_path)+'/'+config_file, config_file]
         self.show_top = show_top
         self.clr = colorstr.bcolors()
         self.last_fetch_timestamp = defaultdict(int)
@@ -42,13 +42,13 @@ class Discord_Analytics():
         Downloads chat messages, once per hour
         """
         self.export_filename[channel_id] = str(channel_id)+".html"
-        self.export_cmd = self.discord_chat_cli+' export -t '+self.token+' -c '+str(channel_id)+' -o '+str(self.adapter_path)+'\\'+self.export_filename[channel_id]
+        self.export_cmd = self.discord_chat_cli+' export -t '+self.token+' -c '+str(channel_id)+' -o '+str(self.adapter_path)+'/'+self.export_filename[channel_id]
 
         print(self.export_cmd)
 
         if(time.time() - self.last_fetch_timestamp[channel_id] > 3600):
             self.last_fetch_timestamp[channel_id] = time.time()
-            subprocess.call(self.export_cmd)
+            subprocess.run(self.export_cmd.split())
 
     def compute_chat_analytics(self, channel_id, plotting=False):
         """
@@ -57,9 +57,9 @@ class Discord_Analytics():
         Computes rank of words and characters used by users.
         """
 
-        with open(str(self.adapter_path)+'\\'+self.export_filename[channel_id], 'r', encoding="utf8") as f:
+        with open(str(self.adapter_path)+'/'+self.export_filename[channel_id], 'r', encoding="utf8") as f:
             contents = f.read()
-            soup = BeautifulSoup(contents, 'lxml')
+            soup = BeautifulSoup(contents, "html.parser")
             chatlog = soup.find_all('div', class_='chatlog__messages')
             char_count = defaultdict(int)
             word_dict = defaultdict(int)
@@ -72,11 +72,11 @@ class Discord_Analytics():
                     for w in message.get_text().split():
                         word_counter[w] += 1
 
-            plt.bar(char_count.keys(), char_count.values(), color='g',label='Character count')
-            plt.bar(word_dict.keys(), word_dict.values(), color='r',label='Word count')
-            plt.xlabel("Players")
-            plt.grid()
-            plt.legend()
+            # plt.bar(char_count.keys(), char_count.values(), color='g',label='Character count')
+            # plt.bar(word_dict.keys(), word_dict.values(), color='r',label='Word count')
+            # plt.xlabel("Players")
+            # plt.grid()
+            # plt.legend()
             
             popular_words = sorted(word_counter, key = word_counter.get, reverse = True)
             tops = popular_words[:self.show_top]
@@ -92,7 +92,8 @@ class Discord_Analytics():
                 print(f"#{i}: {tops[i]}, ocurrances: {word_counter[tops[i]]}")
 
             if plotting:
-                plt.show()
+                pass
+                # plt.show()
 
             output_str = output_str + '```'
             return output_str
