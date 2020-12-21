@@ -57,7 +57,7 @@ class Discord_Analytics():
         Computes rank of words and characters used by users.
         """
 
-        with open(str(self.adapter_path)+'\\'+self.export_filename[channel_id], 'r', encoding="utf8") as f:
+        with open(str(self.adapter_path)+'/'+self.export_filename[channel_id], 'r', encoding="utf8") as f:
             contents = f.read()
             soup = BeautifulSoup(contents, 'lxml')
             chatlog = soup.find_all('div', class_='chatlog__messages')
