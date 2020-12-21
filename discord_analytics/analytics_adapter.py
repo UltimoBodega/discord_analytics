@@ -48,7 +48,7 @@ class Discord_Analytics():
 
         if(time.time() - self.last_fetch_timestamp[channel_id] > 3600):
             self.last_fetch_timestamp[channel_id] = time.time()
-            subprocess.call(self.export_cmd)
+            subprocess.run(self.export_cmd.split())
 
     def compute_chat_analytics(self, channel_id, plotting=False):
         """
