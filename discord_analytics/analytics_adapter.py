@@ -14,7 +14,7 @@ class Discord_Analytics():
         Initializes class configuration parameters
         """
         self.adapter_path = pathlib.Path(__file__).parent.absolute()
-        config_paths = [str(self.adapter_path)+'\\'+config_file, config_file]
+        config_paths = [str(self.adapter_path)+'/'+config_file, config_file]
         self.show_top = show_top
         self.clr = colorstr.bcolors()
         self.last_fetch_timestamp = defaultdict(int)
