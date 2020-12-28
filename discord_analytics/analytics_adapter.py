@@ -67,7 +67,9 @@ class Discord_Analytics():
         users = self.db.get_all_users()
 
         for user in users:
-            char_count[user.name] = self.db.sum_user_chars(user.name, channel_id)
+            value = self.db.sum_user_chars(user.name, channel_id)
+            if value is not None:
+                char_count[user.name] = value
 
         for p, count in sorted(char_count.items(), key=lambda item: item[1], reverse=True):
             if 'bot' in p:
