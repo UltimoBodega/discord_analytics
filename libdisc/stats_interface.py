@@ -89,7 +89,7 @@ class StatsDB():
             return
 
         qry = (self.session.query(func.sum(Message.chars_pd))
-               .filter(Message.user_id == user.user_id, Message.channel_id == message_channel_id)
+               .filter(Message.user_id == user.user_id, Message.channel_id == channel_id)
                .first())
 
         return qry[0]
