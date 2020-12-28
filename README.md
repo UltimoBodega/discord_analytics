@@ -26,4 +26,4 @@ Important: DiscordChatExporter requires .NET Core v3.1 runtime in order to run. 
 
 
 ## Screenshots
-![discord_ranking.png](\.attachments\discord_ranking.png)
+![discord_ranking](.attachments/discord_ranking.png)
