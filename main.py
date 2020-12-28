@@ -17,9 +17,11 @@ async def on_message(message):
         return
 
     if str(message.content) == ".stats":
-        await message.channel.send(f"Voy a ocupar unos minutos, por mientras puedes ir por un cafeciiito, un paneciiito...")
-        disc_analytics.download_chat_messages(message.channel.id)
-        output_str = disc_analytics.compute_chat_analytics(message.channel.id)
+        await message.channel.send(f"Voy a ocupar unos segundos, por mientras puedes ir por un cafeciiito, un paneciiito...")
+        last_ts = disc_analytics.db.fetch_last_timestamp(message.channel.id)
+        disc_analytics.download_chat_messages(message.channel.id, last_ts)
+        disc_analytics.load_db(message.channel.id)
+        output_str = disc_analytics.compute_char_stats(message.channel.id)
         await message.channel.send(output_str)
 
     groserias = ["joto", "puto", "maricon"]

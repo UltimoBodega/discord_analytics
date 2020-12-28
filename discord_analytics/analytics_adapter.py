@@ -2,17 +2,17 @@ import pathlib
 import subprocess
 import json
 import time
-from bs4 import BeautifulSoup
-# import matplotlib.pyplot as plt
 from collections import defaultdict
-from libdisc import colorstr
+from libdisc import colorstr, stats_interface
+import progressbar
 
 class Discord_Analytics():
+    """
+    TODO
+    """
 
     def __init__(self, config_file='config.json', show_top=30):
-        """
-        Initializes class configuration parameters
-        """
+        self.db = stats_interface.StatsDB()
         self.adapter_path = pathlib.Path(__file__).parent.absolute()
         config_paths = [str(self.adapter_path)+'/'+config_file, config_file]
         self.show_top = show_top
@@ -37,63 +37,69 @@ class Discord_Analytics():
         self.token = config_dict["token"]
         self.bot_token = config_dict["bot_token"]
         
-    def download_chat_messages(self, channel_id):
+    def download_chat_messages(self, channel_id, last_ts):
         """
         Downloads chat messages, once per hour
         """
-        self.export_filename[channel_id] = str(channel_id)+".html"
-        self.export_cmd = self.discord_chat_cli+' export -t '+self.token+' -c '+str(channel_id)+' -o '+str(self.adapter_path)+'/'+self.export_filename[channel_id]
+        append_cmd= ""
+        if last_ts is not None:
+            append_cmd = ' --after ' +last_ts
+
+        self.export_filename[channel_id] = str(channel_id)+".json"
+        self.export_cmd = (self.discord_chat_cli+
+                           ' export -f JSON --dateformat "u" -t '+self.token
+                           +' -c '+str(channel_id)
+                           +' -o '+str(self.adapter_path)+'/'+self.export_filename[channel_id]
+                           +append_cmd)
 
         print(self.export_cmd)
 
-        if(time.time() - self.last_fetch_timestamp[channel_id] > 3600):
-            self.last_fetch_timestamp[channel_id] = time.time()
-            subprocess.run(self.export_cmd.split())
+        # if(time.time() - self.last_fetch_timestamp[channel_id] > 3600):
+        #     self.last_fetch_timestamp[channel_id] = time.time()
+        subprocess.run(self.export_cmd.split())
 
-    def compute_chat_analytics(self, channel_id, plotting=False):
+    def compute_char_stats(self, channel_id):
         """
-        Computes chat analytics.
-
-        Computes rank of words and characters used by users.
+        Computes chars per user statistics
         """
+        output_str = "```"
+        char_count = defaultdict(int)
+        users = self.db.get_all_users()
 
-        with open(str(self.adapter_path)+'/'+self.export_filename[channel_id], 'r', encoding="utf8") as f:
-            contents = f.read()
-            soup = BeautifulSoup(contents, "html.parser")
-            chatlog = soup.find_all('div', class_='chatlog__messages')
-            char_count = defaultdict(int)
-            word_dict = defaultdict(int)
-            word_counter = defaultdict(int)
-            for i in range(len(chatlog)):
-                person = chatlog[i].find_all('span', class_='chatlog__author-name')[0].get_text()
-                for message in chatlog[i].find_all('span', class_='preserve-whitespace'):
-                    char_count[person] = char_count[person] + len(message.get_text())
-                    word_dict[person] = word_dict[person] + len(message.get_text().split())
-                    for w in message.get_text().split():
-                        word_counter[w] += 1
+        for user in users:
+            char_count[user.name] = self.db.sum_user_chars(user.name, channel_id)
 
-            # plt.bar(char_count.keys(), char_count.values(), color='g',label='Character count')
-            # plt.bar(word_dict.keys(), word_dict.values(), color='r',label='Word count')
-            # plt.xlabel("Players")
-            # plt.grid()
-            # plt.legend()
-            
-            popular_words = sorted(word_counter, key = word_counter.get, reverse = True)
-            tops = popular_words[:self.show_top]
+        for p, count in sorted(char_count.items(), key=lambda item: item[1], reverse=True):
+            if 'bot' in p:
+                continue
+            output_str = output_str + f"El {p}: {count}" + '\n'
 
-            output_str = "```"
+        output_str = output_str + '```'
+        return output_str
 
-            for p, count in sorted(char_count.items(), key=lambda item: item[1], reverse=True):
-                if 'bot' in p:
-                    continue
-                print(f"El {p}: {count}")
-                output_str = output_str + f"El {p}: {count}" + '\n'
-            for i in range(len(tops)):
-                print(f"#{i}: {tops[i]}, ocurrances: {word_counter[tops[i]]}")
 
-            if plotting:
-                pass
-                # plt.show()
+    def load_db(self, channel_id):
+        """
+        Loads JSON file into SQLite db
 
-            output_str = output_str + '```'
-            return output_str
+        Extracts and transforms data in the JSON message chat log and
+        loads it into a 
+        """
+        message_file = str(self.adapter_path)+'/'+self.export_filename[channel_id]
+        message_dict = json.load(open(message_file))
+
+        len_message = len(message_dict["messages"])
+        bar = progressbar.ProgressBar(maxval=len_message, \
+            widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Percentage()])
+        bar.start()
+        i=0
+        for message in message_dict["messages"]:
+            bar.update(i+1)
+            i+=1
+            timestamp = message['timestamp'].replace("+00:00", "").ljust(23,"0")+"Z"
+            self.db.add_new_message(user_name = message['author']['name'],
+                                    message_timestamp = timestamp,
+                                    message_channel_id = channel_id,
+                                    message_words = len(message['content'].split()),
+                                    message_chars = len(message['content']))
+        bar.finish()
