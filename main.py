@@ -1,11 +1,26 @@
-import discord
 import random
+from datetime import datetime, timezone
+import calendar
 from discord.ext import commands
-import discord_analytics.analytics_adapter as dan
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
-disc_analytics = dan.Discord_Analytics()
+from app_configs.config_manager import ConfigManager
+from discord_analytics.analytics_engine import AnalyticsEngine
+from libdisc.database_manager import DatabaseManager
+from libdisc.discord_manager import DiscordManager
+from libdisc.models.base_mixin import Base
 
+# Dependency injection
 client = commands.Bot(command_prefix='.')
+engine = create_engine(ConfigManager.get_instance().get_db_url())
+Base.metadata.create_all(engine)
+curr_session = sessionmaker(bind=engine)()
+analytics_engine = AnalyticsEngine(db_session=curr_session)
+database_manager = DatabaseManager(db_session=curr_session)
+discord_manager = DiscordManager(db_manager=database_manager, analytics_engine=analytics_engine)
+
+
 
 @client.event
 async def on_ready():
@@ -16,16 +31,20 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    if str(message.content) == ".stats":
-        await message.channel.send(f"Voy a ocupar unos segundos, por mientras puedes ir por un cafeciiito, un paneciiito...")
-        last_ts = disc_analytics.db.fetch_last_timestamp(message.channel.id)
-        disc_analytics.download_chat_messages(message.channel.id, last_ts)
-        disc_analytics.load_db(message.channel.id)
-        output_str = disc_analytics.compute_char_stats(message.channel.id)
-        await message.channel.send(output_str)
+    if str(message.content).startswith('.stats'):
+        await message.channel.send(f"Fetching character count by user")
+        await discord_manager.store_latest_chat_messages(message.channel)
+        await message.channel.send(discord_manager.send_character_analytics(message.channel))
+
+
+    if str(message.content).startswith('.debug'):
+        utc_time = int(message.created_at.replace(tzinfo=timezone.utc).timestamp())
+        print(message.created_at)
+        print(datetime.utcnow())
+        print(datetime.utcfromtimestamp(utc_time))
 
     groserias = ["joto", "puto", "maricon"]
-    author = str(message.author).split("#", 1)[0]
+    author = message.author.display_name
     responses = ["Usaste un termino derrogativo en contra de nuestros amigxs homosexuales",
                  f"Not chill {author}, that's homophobic",
                  "Oye, que feo eres :/ ser homosexual no es malo",
@@ -37,4 +56,4 @@ async def on_message(message):
             await message.channel.send(f"{random.choice(responses)}")
             break
 
-client.run(disc_analytics.bot_token)
+client.run(ConfigManager.get_instance().get_bot_token())
