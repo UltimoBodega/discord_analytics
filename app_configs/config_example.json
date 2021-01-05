@@ -1,0 +1,4 @@
+{
+    "bot_token": "",
+    "db_url": "mysql://username:password@localhost/db_name"
+}

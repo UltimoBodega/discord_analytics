@@ -15,7 +15,7 @@ class DatabaseManager:
     def __init__(self, db_session: Session):
         self.session: Session = db_session
         self.user_cache: Dict[str, int] = {}
-        self.message_cache: Set[Tuple[int, int]] = set()
+        self.message_cache: Set[Tuple[int, int, int]] = set()
         print('Loading caches user and message caches')
         self.load_user_cache()
         self.load_message_cache()
@@ -26,8 +26,9 @@ class DatabaseManager:
         """
         Populates the message cache.
         """
-        for user_id, timestamp in self.session.query(Message.user_id, Message.timestamp):
-            self.message_cache.add((user_id, timestamp))
+        for user_id, channel_id, timestamp in self.session.query(
+                Message.user_id, Message.channel_id, Message.timestamp):
+            self.message_cache.add((user_id, channel_id, timestamp))
 
     def load_user_cache(self) -> None:
         """

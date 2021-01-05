@@ -124,6 +124,6 @@ ENV/
 
 devops_tasks/config.json
 *.bat
-
+app_configs/config.json
 #Environment
 .idea

@@ -29,7 +29,7 @@ class Message(Base):
             timestamp: int,
             word_count: int,
             char_count: int,
-            cache: Set[Tuple[int, int]] = None) -> None:
+            cache: Set[Tuple[int, int, int]] = None) -> None:
 
         """
         Adds message into the database
@@ -43,11 +43,11 @@ class Message(Base):
         @return: None
         """
 
-        if cache and (user_id, timestamp) in cache:
+        if cache and (user_id, channel_id, timestamp) in cache:
             return
 
         message = (db_session.query(Message)
-                   .filter(Message.timestamp == timestamp, Message.user_id == user_id)
+                   .filter(Message.timestamp == timestamp, Message.user_id == user_id, Message.channel_id == channel_id)
                    .one_or_none())
 
         if message is None:
@@ -61,7 +61,7 @@ class Message(Base):
         try:
             db_session.commit()
             if cache:
-                cache.add((user_id, timestamp))
+                cache.add((user_id, channel_id, timestamp))
         except SQLAlchemyError:
             db_session.rollback()
             raise
