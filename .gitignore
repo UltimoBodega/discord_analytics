@@ -102,15 +102,12 @@ ENV/
 
 # vscode
 .vscode/
-
-config/
 *.csv
 *.tdms
 *.db
 # pytest
 .pytest_cache/
 *.html
-config/
 *.tdms_index
 
 # excel
@@ -127,4 +124,6 @@ config/
 
 devops_tasks/config.json
 *.bat
-*.json
+
+#Environment
+.idea
