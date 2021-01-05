@@ -30,7 +30,7 @@ class DiscordManager:
                                             message_word_count=len(msg.content.split()),
                                             message_char_count=len(msg.content))
             messages_processed += 1
-            if messages_processed % 10 == 0:
+            if messages_processed % 100 == 0:
                 print(messages_processed)
 
     def send_character_analytics(self, channel: TextChannel, exclude_bot: bool = True) -> str:

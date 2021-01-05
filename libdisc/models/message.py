@@ -1,6 +1,6 @@
 from typing import Set, Tuple
 
-from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy import Column, Integer, ForeignKey, BigInteger
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from libdisc.models.base_mixin import Base
@@ -11,13 +11,15 @@ class Message(Base):
     """
 
     __tablename__ = "message"
-    __table_args__ = {'mysql_engine':'InnoDB'}
-    id = Column(Integer, primary_key=True)
-    timestamp = Column(Integer, index=True)
-    user_id = Column(Integer, ForeignKey("user.id"))
-    channel_id = Column(Integer, index=True)
-    word_count = Column(Integer)
-    char_count = Column(Integer)
+    __table_args__ = {'mysql_engine':'InnoDB', 'mysql_charset': 'utf8mb4'}
+    id = Column(BigInteger, primary_key=True)
+    timestamp = Column(BigInteger, nullable=False, index=True)
+    user_id = Column(BigInteger, ForeignKey("user.id",
+                                         ondelete='cascade',
+                                         onupdate='cascade'), nullable=False)
+    channel_id = Column(BigInteger, index=True)
+    word_count = Column(BigInteger)
+    char_count = Column(BigInteger)
 
     @staticmethod
     def add_message(
