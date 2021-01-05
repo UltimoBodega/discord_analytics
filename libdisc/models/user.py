@@ -1,6 +1,6 @@
 
 from typing import Dict
-from sqlalchemy import Column, Integer, String, UniqueConstraint
+from sqlalchemy import Column, String, UniqueConstraint, BigInteger
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import relationship, backref, Session
 
@@ -13,9 +13,9 @@ class User(Base):
     """
 
     __tablename__ = "user"
-    __table_args__ = (UniqueConstraint('name'), {'mysql_engine':'InnoDB'})
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
+    __table_args__ = (UniqueConstraint('name'), {'mysql_engine':'InnoDB', 'mysql_charset': 'utf8mb4'})
+    id = Column(BigInteger, primary_key=True)
+    name = Column(String(length=256), server_default='', nullable=False)
     messages = relationship("Message", backref=backref("user"))
 
 
