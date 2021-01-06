@@ -33,7 +33,7 @@ class ConfigManager:
         self.arg_dict = {}
         self.load_config_file(f'{str(pathlib.Path(__file__).parent.absolute())}/config.json')
 
-    def load_config_file(self, filepath):
+    def load_config_file(self, filepath: str) -> None:
         """
         Attempts to load config file located at filepath.
         """
