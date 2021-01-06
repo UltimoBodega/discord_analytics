@@ -12,7 +12,7 @@ class Message(Base):
 
     __tablename__ = "message"
     __table_args__ = {'mysql_engine':'InnoDB', 'mysql_charset': 'utf8mb4'}
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Integer, primary_key=True)
     timestamp = Column(BigInteger, nullable=False, index=True)
     user_id = Column(BigInteger, ForeignKey("user.id",
                                          ondelete='cascade',
