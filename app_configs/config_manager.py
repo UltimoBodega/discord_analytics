@@ -29,13 +29,19 @@ class ConfigManager:
         else:
             ConfigManager.__instance = self
 
-        config_path = f'{str(pathlib.Path(__file__).parent.absolute())}/config.json'
         self.config_dict = {}
-        if os.path.exists(config_path):
-            print(f'Loading config file: {config_path}')
-            self.config_dict = json.load(open(config_path))
+        self.arg_dict = {}
+        self.load_config_file(f'{str(pathlib.Path(__file__).parent.absolute())}/config.json')
+
+    def load_config_file(self, filepath):
+        """
+        Attempts to load config file located at filepath.
+        """
+        if os.path.exists(filepath):
+            print(f'Loading config file: {filepath}')
+            self.config_dict = json.load(open(filepath))
         else:
-            print(f'Not loading config file: {config_path} since it does not exist')
+            print(f'Not loading config file: {filepath} since it does not exist')
 
 
     def get_db_url(self) -> str:
@@ -49,5 +55,23 @@ class ConfigManager:
         """
         @return: The configured bot token or default test bodega token
         """
-        return self.config_dict['bot_token'] if 'bot_token' in self.config_dict else \
-            'Nzk1ODk2NzQzODM2NTE2MzYy.X_QCmg.2HC3k6f-XF1Iuvcab0j3B8IjAiA'
+        bot_token = ""
+        if 'bot_token' in self.config_dict:
+            if self.config_dict['bot_token']:
+                bot_token = self.config_dict['bot_token']
+
+        if 'bot_token' in self.arg_dict:
+            if self.arg_dict['bot_token']:
+                bot_token = self.arg_dict['bot_token']
+
+        return bot_token
+
+    def inject_parsed_arguments(self, arguments: dict) -> None:
+        """
+        Populates private argument dictionary.
+        """
+        for argument, value in arguments.items():
+            self.arg_dict[argument] = value
+
+
+
