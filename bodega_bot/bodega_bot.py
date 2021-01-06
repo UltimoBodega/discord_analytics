@@ -1,6 +1,4 @@
-import argparse
 import app_configs.config_manager as app_conf
-from app_configs.config_manager import ConfigManager
 from bodega_bot import app
 
 #------------- Main Program -------------#

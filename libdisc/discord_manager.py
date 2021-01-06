@@ -15,13 +15,19 @@ class DiscordManager:
         self.db_manager = db_manager
         self.analytics_engine = analytics_engine
 
-    async def store_latest_chat_messages(self, channel: TextChannel) -> None:
+    async def store_latest_chat_messages(self, channel: TextChannel, is_backfill: bool = False) -> None:
         """
         Attempts to load chat messages since the last timestamp in the database.
         @param channel: The discord text channel.
+        @param is_backfill: Whether or not backfill from beginning of time.
         """
         last_timestamp = self.db_manager.get_last_message_timestamp(channel.id)
         after = datetime.utcfromtimestamp(last_timestamp) if last_timestamp else None
+
+        if is_backfill:
+            after = None
+            self.db_manager.reset_cache()
+
         messages_processed = 0
         async for msg in channel.history(limit=None, after=after):
             self.db_manager.add_new_message(user_name=msg.author.display_name,

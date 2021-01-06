@@ -1,4 +1,3 @@
-from collections import defaultdict
 from typing import Dict, Set, Tuple
 
 from sqlalchemy import desc
@@ -36,6 +35,13 @@ class DatabaseManager:
         """
         for user in self.session.query(User):
             self.user_cache[user.name] = user.id
+
+    def reset_cache(self) -> None:
+        """
+        Resets both user and message caches
+        """
+        self.user_cache.clear()
+        self.message_cache.clear()
 
     def add_new_message(self,
                         user_name: str,

@@ -1,6 +1,5 @@
 import random
 from datetime import datetime, timezone
-import calendar
 from discord.ext import commands
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -16,7 +15,7 @@ def bodega_bot () -> None:
     TODO
     """
     client = commands.Bot(command_prefix='.')
-    engine = create_engine(ConfigManager.get_instance().get_db_url())
+    engine = create_engine(ConfigManager.get_instance().get_db_url(), pool_recycle=600)
     Base.metadata.create_all(engine)
     curr_session = sessionmaker(bind=engine)()
     analytics_engine = AnalyticsEngine(db_session=curr_session)
@@ -33,9 +32,14 @@ def bodega_bot () -> None:
             return
 
         if str(message.content).startswith('.stats'):
-            await message.channel.send(f"Fetching character count by user")
-            await discord_manager.store_latest_chat_messages(message.channel)
+            await message.channel.send(f"Fetching character count by user......")
+            await discord_manager.store_latest_chat_messages(channel=message.channel)
             await message.channel.send(discord_manager.send_character_analytics(message.channel))
+
+        if str(message.content).startswith('.backfill'):
+            await message.channel.send(f"Forcing message backfill insertion this might take a while")
+            await discord_manager.store_latest_chat_messages(channel=message.channel, is_backfill=True)
+            await message.channel.send(f"Backfill complete!")
 
         if str(message.content).startswith('.debug'):
             utc_time = int(message.created_at.replace(tzinfo=timezone.utc).timestamp())
@@ -56,5 +60,4 @@ def bodega_bot () -> None:
                 await message.channel.send(f"{random.choice(responses)}")
                 break
 
-    print(ConfigManager.get_instance().get_bot_token())
     client.run(ConfigManager.get_instance().get_bot_token())
