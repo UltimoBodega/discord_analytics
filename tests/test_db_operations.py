@@ -14,12 +14,15 @@ from discord_analytics.analytics_engine import AnalyticsEngine
 #TC02.0: Fetching data for dummy channel ID
 ('sqlite:///'+context.curr_path+'/tests/support/bodega_discord.db', 0, "{}"),
 
-#TC03.0: Fetching data for dummy channel ID
+#TC03.0: Fetching data for non integer channel ID
+('sqlite:///'+context.curr_path+'/tests/support/bodega_discord.db', "dummy_str", "{}"),
+
+#TC04.0: Bad filepath+filename for db
 ('/bodega_discord.db', 790004680604123168, "Could not parse rfc1738 URL from string '/bodega_discord.db'"),
 
 ])
 
-def test_db_analytics(dbpath,channel_id,output):
+def test_db_analytics(dbpath,channel_id,output) -> None:
     result = None
     try:
         engine = create_engine(dbpath, pool_recycle=600)
