@@ -3,6 +3,7 @@ from discord import TextChannel
 
 from discord_analytics.analytics_engine import AnalyticsEngine
 from libdisc.database_manager import DatabaseManager
+from libdisc.media_manager import MediaManager
 
 
 class DiscordManager:
@@ -10,10 +11,11 @@ class DiscordManager:
     This class serves as the primary orchestrator for any data exported from discord server.
     """
 
-    def __init__(self, db_manager: DatabaseManager, analytics_engine: AnalyticsEngine):
+    def __init__(self, db_manager: DatabaseManager, analytics_engine: AnalyticsEngine, media_manager: MediaManager):
         # dict where key is channel id and value last fetched timestamp
         self.db_manager = db_manager
         self.analytics_engine = analytics_engine
+        self.media_manager = media_manager
 
     async def store_latest_chat_messages(self, channel: TextChannel, is_backfill: bool = False) -> None:
         """
@@ -42,6 +44,7 @@ class DiscordManager:
     def send_character_analytics(self, channel: TextChannel, exclude_bot: bool = True) -> str:
         """
         Sends out the latest user and character count analytics.
+
         @param channel: The channel to analyze and send.
         @param exclude_bot: Weather or not to include bot statistics.
         @return: a Discord friendly character statistics string.
@@ -55,3 +58,33 @@ class DiscordManager:
 
         output_str += '```'
         return output_str
+
+    def handle_gif_cooldown(self, user_name: str, message_ts: int) -> str:
+        """
+        Handle's whether or not the bot should post a Gif to the discord Channel.
+
+        @param user_name: A Discord User's name
+        @param message_ts: Timestamp of the latest message sent by user.
+        @return: a Gif url string.
+        """
+        gif_url = ""
+        (keyword, gif_timestamp) = self.db_manager.get_last_gif_preference(user_name)
+
+        if keyword:
+            if message_ts - gif_timestamp >= 60*60:
+                gif_url = self.media_manager.get_gif(keyword)
+                if gif_url:
+                    self.db_manager.upsert_new_gif_entry(user_name=user_name, keyword=keyword, timestamp=message_ts)
+
+        return gif_url
+
+    def upsert_gif_keyword(self, user_name: str, keyword: str) -> None:
+        """
+        Inserts a Gif keyword preference for a particular user.
+
+        @param user_name: A Discord User's name
+        @param keyword: Keyword used to find a gif.
+        @return: None
+        """
+        self.db_manager.upsert_new_gif_entry(user_name=user_name, keyword=keyword)
+

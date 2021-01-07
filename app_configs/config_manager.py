@@ -57,6 +57,12 @@ class ConfigManager:
         """
         return self.config_dict['bot_token'] or ""
 
+    def get_giphy_api_key(self) -> str:
+        """
+        @return: The configured Giphy API key or empty string.
+        """
+        return self.config_dict['giphy_key'] or ""
+
     def inject_parsed_arguments(self, arguments: dict) -> None:
         """
         Populates private argument dictionary.
@@ -79,6 +85,7 @@ def user_input() -> None:
     parser.add_argument('-bot_token', '-b', type=str, default="", help='Discord Bot token')
     parser.add_argument('--db_url', '-d', type=str, default="", help='Database url or connection string.')
     parser.add_argument('--config-path', '--config_path', '-c', type=str, default="", help='Filepath to configuration file.')
+    parser.add_argument('--giphy-key', '--giphy_key', '-gk', type=str, default="", help="Giphy API Key.")
     args = parser.parse_args()
     ConfigManager.get_instance().inject_parsed_arguments(args.__dict__)
 
