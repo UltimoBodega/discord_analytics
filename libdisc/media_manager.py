@@ -15,10 +15,10 @@ class MediaManager:
     def get_gif(self, keyword, limit=10, rating='g', lang = 'en') -> str:
         """
         Returns a GIF url based on the inputted keyword.
-        
+
         @param keyword: Search query term or prhase.
-        @param limit: The maximum number of records to return.
-        @param rating: The message's user name
+        @param limit: The maximum number of records to randomize from.
+        @param rating: The rating quality of the fetched gifs.
         @param lang: Specify default country for regional content; use a 2-letter ISO 639-1 country code.
         @return gif_url: The message's channel id
         """
