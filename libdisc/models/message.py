@@ -3,9 +3,10 @@ from typing import Set, Tuple
 from sqlalchemy import Column, Integer, ForeignKey, BigInteger
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
-from libdisc.models.base_mixin import Base
+from libdisc.models.base_mixin import BaseModel
 
-class Message(Base):
+
+class Message(BaseModel):
     """
     Table used to store messages
     """
@@ -14,7 +15,7 @@ class Message(Base):
     __table_args__ = {'mysql_engine':'InnoDB', 'mysql_charset': 'utf8mb4'}
     id = Column(Integer, primary_key=True)
     timestamp = Column(BigInteger, nullable=False, index=True)
-    user_id = Column(BigInteger, ForeignKey("user.id",
+    user_id = Column(Integer, ForeignKey("user.id",
                                          ondelete='cascade',
                                          onupdate='cascade'), nullable=False)
     channel_id = Column(BigInteger, index=True)

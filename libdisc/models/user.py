@@ -4,10 +4,10 @@ from sqlalchemy import Column, String, UniqueConstraint, Integer
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import relationship, backref, Session
 
-from libdisc.models.base_mixin import Base
+from libdisc.models.base_mixin import BaseModel
 
 
-class User(Base):
+class User(BaseModel):
     """
     Table used to describe user entities
     """

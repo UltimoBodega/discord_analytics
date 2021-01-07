@@ -8,16 +8,17 @@ from app_configs.config_manager import ConfigManager
 from discord_analytics.analytics_engine import AnalyticsEngine
 from libdisc.database_manager import DatabaseManager
 from libdisc.discord_manager import DiscordManager
-from libdisc.models.base_mixin import Base
+from libdisc.models.base_mixin import BaseModel
 
 def bodega_bot () -> None:
     """
-    TODO
+    Main discord application entry point
     """
     client = commands.Bot(command_prefix='.')
-    engine = create_engine(ConfigManager.get_instance().get_db_url(), pool_recycle=600)
-    Base.metadata.create_all(engine)
-    curr_session = sessionmaker(bind=engine)()
+    engine = create_engine(ConfigManager.get_instance().get_db_url(), pool_recycle=299, pool_pre_ping=True)
+    BaseModel.metadata.create_all(engine)
+    session_maker =  sessionmaker(bind=engine)
+    curr_session = session_maker()
     analytics_engine = AnalyticsEngine(db_session=curr_session)
     database_manager = DatabaseManager(db_session=curr_session)
     discord_manager = DiscordManager(db_manager=database_manager, analytics_engine=analytics_engine)
