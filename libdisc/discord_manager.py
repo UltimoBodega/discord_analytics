@@ -44,6 +44,7 @@ class DiscordManager:
     def send_character_analytics(self, channel: TextChannel, exclude_bot: bool = True) -> str:
         """
         Sends out the latest user and character count analytics.
+
         @param channel: The channel to analyze and send.
         @param exclude_bot: Weather or not to include bot statistics.
         @return: a Discord friendly character statistics string.
@@ -60,7 +61,11 @@ class DiscordManager:
 
     def handle_gif_cooldown(self, user_name: str, message_ts: int) -> str:
         """
-        TODO
+        Handle's whether or not the bot should post a Gif to the discord Channel.
+
+        @param user_name: A Discord User's name
+        @param message_ts: Timestamp of the latest message sent by user.
+        @return: a Gif url string.
         """
         gif_url = ""
         (keyword, gif_timestamp) = self.db_manager.get_last_gif_preference(user_name)
@@ -74,7 +79,11 @@ class DiscordManager:
 
     def upsert_gif_keyword(self, user_name: str, keyword: str) -> None:
         """
-        TODO
+        Inserts a Gif keyword preference for a particular user.
+
+        @param user_name: A Discord User's name
+        @param keyword: Keyword used to find a gif.
+        @return: None
         """
         self.db_manager.upsert_new_gif_entry(user_name=user_name, keyword=keyword)
 
