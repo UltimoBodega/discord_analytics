@@ -1,6 +1,6 @@
 from typing import Set, Tuple
 
-from sqlalchemy import Column, Integer, ForeignKey, BigInteger
+from sqlalchemy import Column, Integer, ForeignKey, BigInteger, func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from libdisc.models.base_mixin import BaseModel
@@ -12,7 +12,7 @@ class Message(BaseModel):
     """
 
     __tablename__ = "message"
-    __table_args__ = {'mysql_engine':'InnoDB', 'mysql_charset': 'utf8mb4'}
+    __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8mb4'}
     id = Column(Integer, primary_key=True)
     timestamp = Column(BigInteger, nullable=False, index=True)
     user_id = Column(Integer, ForeignKey("user.id",
@@ -47,22 +47,24 @@ class Message(BaseModel):
         if cache and (user_id, channel_id, timestamp) in cache:
             return
 
-        message = (db_session.query(Message)
-                   .filter(Message.timestamp == timestamp, Message.user_id == user_id, Message.channel_id == channel_id)
-                   .one_or_none())
+        message_count = (db_session.query(func.count(Message.id))
+                         .filter(Message.timestamp == timestamp, Message.user_id == user_id,
+                                 Message.channel_id == channel_id)
+                         .scalar())
 
-        if message is None:
+        if message_count == 0:
             message = Message(timestamp=timestamp,
                               user_id=user_id,
                               channel_id=channel_id,
                               word_count=word_count,
                               char_count=char_count)
-        db_session.add(message)
+            db_session.add(message)
 
-        try:
-            db_session.commit()
-            if cache:
-                cache.add((user_id, channel_id, timestamp))
-        except SQLAlchemyError:
-            db_session.rollback()
-            raise
+            try:
+                db_session.commit()
+            except SQLAlchemyError:
+                db_session.rollback()
+                raise
+
+        if cache:
+            cache.add((user_id, channel_id, timestamp))
