@@ -73,7 +73,8 @@ class DiscordManager:
         if keyword:
             if message_ts - gif_timestamp >= 60*60:
                 gif_url = self.media_manager.get_gif(keyword)
-                self.db_manager.upsert_new_gif_entry(user_name=user_name, keyword=keyword, timestamp=message_ts)
+                if gif_url:
+                    self.db_manager.upsert_new_gif_entry(user_name=user_name, keyword=keyword, timestamp=message_ts)
 
         return gif_url
 

@@ -39,9 +39,6 @@ def bodega_bot () -> None:
 
         author = message.author.display_name
         utc_time = int(message.created_at.replace(tzinfo=timezone.utc).timestamp())
-        gif_url = discord_manager.handle_gif_cooldown(user_name=author, message_ts=utc_time)
-        if gif_url:
-            await message.channel.send(gif_url)
 
         if str(message.content).startswith('.stats'):
             await message.channel.send(f"Fetching character count by user......")
@@ -64,9 +61,10 @@ def bodega_bot () -> None:
             print(datetime.utcnow())
             print(datetime.utcfromtimestamp(utc_time))
 
-        if str(message.content).lower().startswith('hola'):
-            gif = media_manager.get_gif(map_dict[author])
-            await message.channel.send(gif)
+        if not str(message.content).startswith('.'):
+            gif_url = discord_manager.handle_gif_cooldown(user_name=author, message_ts=utc_time)
+            if gif_url:
+                await message.channel.send(gif_url)
 
         groserias = ["joto", "puto", "maricon"]
         

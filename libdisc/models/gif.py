@@ -44,11 +44,12 @@ class Gif(Base):
 
         try:
             db_session.commit()
-            if cache:
-                cache[user_id] = (keyword, timestamp)
         except SQLAlchemyError:
             db_session.rollback()
             raise
+
+        if cache:
+            cache[user_id] = (keyword, timestamp)
 
     @staticmethod
     def read_gif_preference(db_session: Session, user_id:int,  cache: Dict[int, Tuple[str, int]] = None) -> Tuple[str, int]:
@@ -61,10 +62,12 @@ class Gif(Base):
         @return: Tuple with The Gif keyword string to be user for the API query and
                  the latest timestamp corresponding to when the bot posted a Gif for user_id
         """
-        timestamp = 0
-        keyword = ""
+        
         if cache and user_id in cache:
             return cache[user_id]
+
+        timestamp = 0
+        keyword = ""
 
         gif = (db_session.query(Gif)
                 .filter(Gif.user_id == user_id)
@@ -73,5 +76,8 @@ class Gif(Base):
         if gif is not None:
             timestamp = gif.timestamp
             keyword = gif.keyword
+
+        if cache:
+            cache[user_id] = (keyword, timestamp)
 
         return (keyword, timestamp)

@@ -30,9 +30,8 @@ class MediaManager:
         except ApiException as e:
             raise ValueError("Exception when calling DefaultApi->gifs_search_get: %s\n" % e)
 
-        links = []
-        for data in api_response.data:
-            links.append(data.bitly_gif_url)
 
-        gif_url = random.choice(links)
+        data_element = random.choice(list(api_response.data))
+        gif_url = data_element.bitly_gif_url
+        
         return gif_url
