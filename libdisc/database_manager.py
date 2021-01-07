@@ -16,7 +16,7 @@ class DatabaseManager:
         self.session: Session = db_session
         self.user_cache: Dict[str, int] = {}
         self.message_cache: Set[Tuple[int, int, int]] = set()
-        self.gif_cache: Dict[int, int] = {}
+        self.gif_cache: Dict[int, Tuple[str, int]] = {}
         print('Loading caches user and message caches')
         self.load_user_cache()
         self.load_message_cache()
@@ -44,7 +44,7 @@ class DatabaseManager:
         Populates the gif cache.
         """
         for gif in self.session.query(Gif):
-            self.gif_cache[gif.user_id] = gif.timestamp
+            self.gif_cache[gif.user_id] = (gif.keyword, gif.timestamp)
 
     def reset_cache(self) -> None:
         """
@@ -82,7 +82,8 @@ class DatabaseManager:
 
     def get_last_message_timestamp(self, message_channel_id: int) -> int:
         """
-        Returns the latest timestamp from message from a particular channel
+        Returns the latest timestamp from message from a particular channel.
+
         @param message_channel_id: The message's channel id
         @return: last fetched timestamp of the channel's messages if no messages then 0
         """
@@ -97,9 +98,11 @@ class DatabaseManager:
 
     def get_last_gif_preference(self, user_name: str) -> Tuple[str, int]:
         """
-        Returns the latest timestamp from message from a particular channel
-        @param message_channel_id: The message's channel id
-        @return: last fetched timestamp of the channel's messages if no messages then 0
+        Returns the latest Gif preference for a particular user.
+
+        @param user_name: The User name for the Gif preference.
+        @return: Tuple with The Gif keyword string to be user for the API query and
+                 the latest timestamp corresponding to when the bot posted a Gif for user_id
         """
         user_id = User.get_or_create(db_session=self.session,
                                      user_name=user_name,
@@ -114,7 +117,12 @@ class DatabaseManager:
 
     def upsert_new_gif_entry(self, user_name: str, keyword: str, timestamp:int=0) -> None:
         """
-        TODO
+        Updates or creates a gif entry for a user in the DB.
+
+        @param user_name: The User name for the Gif preference.
+        @param keyword: The Gif keyword string to be user for the API query
+        @param timestamp: The latest timestamp corresponding to when the bot posted a Gif for user_id
+        @return: None
         """
         user_id = User.get_or_create(db_session=self.session,
                                      user_name=user_name,

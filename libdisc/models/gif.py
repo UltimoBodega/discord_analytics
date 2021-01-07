@@ -1,4 +1,4 @@
-from typing import Dict, Tuple
+from typing import Tuple, Dict
 from sqlalchemy import Column, String, UniqueConstraint, Integer, ForeignKey, BigInteger
 from libdisc.models.base_mixin import Base
 from sqlalchemy.orm import Session
@@ -20,7 +20,7 @@ class Gif(Base):
 
     @staticmethod
     def upsert_gif_entry(db_session: Session, user_id: int, keyword: str, 
-                         timestamp:int, cache: Dict[int, int]=None) -> None:
+                         timestamp:int, cache: Dict[int, Tuple[str, int]]=None) -> None:
         """
         Updates or creates a gif entry for a user in the DB.
 
@@ -45,25 +45,26 @@ class Gif(Base):
         try:
             db_session.commit()
             if cache:
-                cache[user_id] = timestamp
+                cache[user_id] = (keyword, timestamp)
         except SQLAlchemyError:
             db_session.rollback()
             raise
 
     @staticmethod
-    def read_gif_preference(db_session: Session, user_id:int,  cache: Dict[int, int] = None) -> Tuple[str, int]:
+    def read_gif_preference(db_session: Session, user_id:int,  cache: Dict[int, Tuple[str, int]] = None) -> Tuple[str, int]:
         """
         Reads the latest timestamp for a user in the DB.
 
         @param db_session: The current database session
         @param user_id: The id of the user
         @param cache: Optional cache object to lookup database users
-        @return: The latest timestamp corresponding to when the bot posted a Gif for user_id
+        @return: Tuple with The Gif keyword string to be user for the API query and
+                 the latest timestamp corresponding to when the bot posted a Gif for user_id
         """
         timestamp = 0
         keyword = ""
-        # if cache and user_id in cache:
-        #     return cache[user_id]
+        if cache and user_id in cache:
+            return cache[user_id]
 
         gif = (db_session.query(Gif)
                 .filter(Gif.user_id == user_id)
