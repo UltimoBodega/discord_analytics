@@ -4,6 +4,7 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from db.db import DB
 from discord_analytics.analytics_engine import AnalyticsEngine
 from libdisc.database_manager import DatabaseManager
 from libdisc.discord_manager import DiscordManager
@@ -31,12 +32,9 @@ def test_gif_db() -> None:
     gif_dummy_key = ""
     output = {'Read empty': ('', 0), 'Initial preference': ('Stranger Things', 0), 'Read update': ('Twin Peaks', 75000)}
 
-    engine = create_engine(db_url, pool_recycle=299, pool_pre_ping=True)
-    BaseModel.metadata.create_all(engine)
-    session_maker =  sessionmaker(bind=engine)
-    curr_session = session_maker()
-    analytics_engine = AnalyticsEngine(db_session=curr_session)
-    database_manager = DatabaseManager(db_session=curr_session)
+    DB.get_instance().setup_db(db_url)
+    analytics_engine = AnalyticsEngine()
+    database_manager = DatabaseManager()
     media_manager = MediaManager(gif_dummy_key)
     discord_manager = DiscordManager(db_manager=database_manager, analytics_engine=analytics_engine,
                                     media_manager=media_manager)

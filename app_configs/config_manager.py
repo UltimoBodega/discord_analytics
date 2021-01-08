@@ -31,7 +31,6 @@ class ConfigManager:
             ConfigManager.__instance = self
 
         self.config_dict = {}
-        self._load_config_file(f'{str(pathlib.Path(__file__).parent.absolute())}/config.json')
 
     def _load_config_file(self, filepath: str) -> None:
         """
@@ -41,7 +40,8 @@ class ConfigManager:
             print(f'Loading config file: {filepath}')
             self.config_dict = json.load(open(filepath))
         else:
-            print(f'Not loading config file: {filepath} since it does not exist')
+            if filepath:
+                print(f'Not loading config file: {filepath} since it does not exist')
 
 
     def get_db_url(self) -> str:
@@ -67,8 +67,10 @@ class ConfigManager:
         """
         Populates private argument dictionary.
         """
-
-        self._load_config_file(arguments["config_path"])
+        config_path = arguments["config_path"]
+        if not config_path:
+            config_path = f'{str(pathlib.Path(__file__).parent.absolute())}/config.json'
+        self._load_config_file(config_path)
         for argument, value in arguments.items():
             if argument not in self.config_dict:
                 self.config_dict[argument] = value
