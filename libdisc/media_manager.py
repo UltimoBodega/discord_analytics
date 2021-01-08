@@ -22,7 +22,6 @@ class MediaManager:
         @param lang: Specify default country for regional content; use a 2-letter ISO 639-1 country code.
         @return gif_url: The message's channel id
         """
-        gif_url = ""
         try: 
             api_response = self.giphy_api.gifs_search_get(self.giphy_key, keyword,
                                                           limit=limit, rating=rating,
