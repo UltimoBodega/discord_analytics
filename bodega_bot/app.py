@@ -1,15 +1,13 @@
 import random
 from datetime import datetime, timezone
 from discord.ext import commands
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+
 
 from app_configs.config_manager import ConfigManager
 from discord_analytics.analytics_engine import AnalyticsEngine
 from libdisc.database_manager import DatabaseManager
 from libdisc.discord_manager import DiscordManager
 from libdisc.media_manager import MediaManager
-from libdisc.models.base_mixin import Base
 from libdisc.models.base_mixin import BaseModel
 
 def bodega_bot () -> None:
@@ -17,19 +15,17 @@ def bodega_bot () -> None:
     Main discord application entry point
     """
     client = commands.Bot(command_prefix='.')
-    engine = create_engine(ConfigManager.get_instance().get_db_url(), pool_recycle=299, pool_pre_ping=True)
-    BaseModel.metadata.create_all(engine)
-    session_maker =  sessionmaker(bind=engine)
-    curr_session = session_maker()
-    analytics_engine = AnalyticsEngine(db_session=curr_session)
-    database_manager = DatabaseManager(db_session=curr_session)
+
+    analytics_engine = AnalyticsEngine()
+    database_manager = DatabaseManager()
     media_manager = MediaManager(ConfigManager.get_instance().get_giphy_api_key())
     discord_manager = DiscordManager(db_manager=database_manager, analytics_engine=analytics_engine,
                                      media_manager=media_manager)
-    
 
     @client.event
     async def on_ready():
+        print('Cargando caches . . . .')
+        database_manager.load_cache()
         print('Fierro pariente! :)')
 
     @client.event
@@ -67,16 +63,14 @@ def bodega_bot () -> None:
                 await message.channel.send(gif_url)
 
         groserias = ["joto", "puto", "maricon"]
-        
+
         responses = ["Usaste un termino derrogativo en contra de nuestros amigxs homosexuales",
                     f"Not chill {author}, that's homophobic",
                     "Oye, que feo eres :/ ser homosexual no es malo",
                     f"¿Quién te crees {author}? ¿Molotov?",
                     f"{author}, you are willfully ignoring the virulently homophobic undertones of your statement."]
-        
-        for groseria in groserias:
-            if groseria in str(message.content).lower():
-                await message.channel.send(f"{random.choice(responses)}")
-                break
+
+        if any(groseria in str(message.content).lower() for groseria in groserias):
+            await message.channel.send(f"{random.choice(responses)}")
 
     client.run(ConfigManager.get_instance().get_bot_token())

@@ -41,7 +41,8 @@ class ConfigManager:
             print(f'Loading config file: {filepath}')
             self.config_dict = json.load(open(filepath))
         else:
-            print(f'Not loading config file: {filepath} since it does not exist')
+            if filepath:
+                print(f'Not loading config file: {filepath} since it does not exist')
 
 
     def get_db_url(self) -> str:
