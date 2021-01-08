@@ -1,8 +1,7 @@
 import context
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from libdisc.models.base_mixin import Base
+
+from db.db import DB
 from discord_analytics.analytics_engine import AnalyticsEngine
 
 @pytest.mark.parametrize ("dbpath,channel_id,output",
@@ -23,12 +22,9 @@ from discord_analytics.analytics_engine import AnalyticsEngine
 ])
 
 def test_db_analytics(dbpath,channel_id,output) -> None:
-    result = None
     try:
-        engine = create_engine(dbpath, pool_recycle=600)
-        Base.metadata.create_all(engine)
-        curr_session = sessionmaker(bind=engine)()
-        analytics_engine = AnalyticsEngine(db_session=curr_session)
+        DB.get_instance().setup_db(dbpath)
+        analytics_engine = AnalyticsEngine()
         result = analytics_engine.get_user_by_char_count(channel_id)
     except Exception as error_msg:
         result = error_msg

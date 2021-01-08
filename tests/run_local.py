@@ -1,5 +1,4 @@
-import os
 import context
-from bodega_bot import bodega_bot
+import bodega_bot.bodega_bot as run_bot
 
-bodega_bot.main()
+run_bot.main()

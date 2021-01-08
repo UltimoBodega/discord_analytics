@@ -32,7 +32,7 @@ class DiscordManager:
 
         messages_processed = 0
         async for msg in channel.history(limit=None, after=after):
-            self.db_manager.add_new_message(user_name=msg.author.display_name,
+            self.db_manager.add_new_message(user_name=msg.author.name,
                                             timestamp=int(msg.created_at.replace(tzinfo=timezone.utc).timestamp()),
                                             message_channel_id=channel.id,
                                             message_word_count=len(msg.content.split()),
