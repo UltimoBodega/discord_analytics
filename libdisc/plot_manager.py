@@ -1,4 +1,5 @@
 import os
+from typing import Dict
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import numpy as np
@@ -14,31 +15,33 @@ class PlotManager:
     def __init__(self):
         pass
 
-    def prepare_stat_items(self, stat_item:StatItem) -> (StatItem, int, int,
-                                                         int, int):
+    def _prepare_stat_items(self, stat_item: Dict[str, StatItem]) -> (int, int, int, int):
         """
         Pre-process data in a StatItem.
 
         @param stat_item: StatItem object
         @return: a Tuple with a StatItem object, and min and max values for both:
                  timestamps and values within inputted StatItem.
+
+        Note: 
         """
         all_ts, all_vals = [], []
 
         for user in stat_item:
-            all_ts.extend(stat_item[user].timestamp)
+            all_ts.extend(stat_item[user].timestamps)
             all_vals.extend(stat_item[user].values)
 
         if not all_ts:
-            return (None, None, None, None, None)
+            stat_item = None
+            return None, None, None, None
 
         max_ts, min_ts = int(max(all_ts)), int(min(all_ts))
         max_val, min_val = int(max(all_vals)), int(min(all_vals))
 
-        return (stat_item, max_ts, min_ts, max_val, min_val)
+        return max_ts, min_ts, max_val, min_val
 
 
-    def generate_trend_image(self, stat_item:StatItem) -> str:
+    def generate_trend_image(self, stat_item: Dict[str, StatItem]) -> str:
         """
         Generates a trend image based on StatItem.
 
@@ -46,7 +49,7 @@ class PlotManager:
         @return: a filepath/filename to the generated trend image.
         """
         filename = os.getcwd()+'/trend.png'
-        (stat_item, max_ts, min_ts, max_val, min_val) = self.prepare_stat_items(stat_item)
+        (max_ts, min_ts, max_val, min_val) = self._prepare_stat_items(stat_item)
 
         if stat_item is None:
             print("Empty StatItem - Possible no data in DB for discord channel.")
@@ -57,13 +60,12 @@ class PlotManager:
 
         for user in stat_item:
             try:
-                timestamp_smooth = np.linspace(min(stat_item[user].timestamp), max(stat_item[user].timestamp), 300) 
-                spl = make_interp_spline(stat_item[user].timestamp, stat_item[user].values, k=3)  # type: BSpline
-                values_smooth = spl(timestamp_smooth)
-                ax.plot_date(timestamp_smooth, values_smooth, label=user, ls='-', markersize=0)
+                timestamps_smooth = np.linspace(min(stat_item[user].timestamps), max(stat_item[user].timestamps), 300) 
+                spl = make_interp_spline(stat_item[user].timestamps, stat_item[user].values, k=3)  # type: BSpline
+                values_smooth = spl(timestamps_smooth)
+                ax.plot_date(timestamps_smooth, values_smooth, label=user, ls='-', markersize=0)
             except:
-                print(f"Not enough trend data for: {user}")
-            
+                raise ValueError(f"Not enough trend data for: {user}")   
         
         ax.xaxis.set_major_locator(mdates.MonthLocator())
         ax.xaxis.set_major_formatter(mdates.DateFormatter("%b"))

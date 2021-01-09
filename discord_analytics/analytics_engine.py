@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 @dataclass
 class StatItem:
     """Class for grouping stats for user."""
-    timestamp: List[int] = field(default_factory=list)
+    timestamps: List[int] = field(default_factory=list)
     values: List[int] = field(default_factory=list)
 
 class AnalyticsEngine:
@@ -58,10 +58,10 @@ class AnalyticsEngine:
                                       .group_by(User.name, "day_time")
                                       .order_by(asc("day_time")))
 
-        for name, timestamp, character_count in query:
+        for name, timestamps, character_count in query:
             if "bot" in name:
                 continue
-            out_dict[name].timestamp.append(np.multiply(timestamp,7))
+            out_dict[name].timestamps.append(np.multiply(timestamps,7))
             out_dict[name].values.append(character_count)
 
         return out_dict
