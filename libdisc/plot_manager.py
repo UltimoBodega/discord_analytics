@@ -65,7 +65,8 @@ class PlotManager:
                 values_smooth = spl(timestamps_smooth)
                 ax.plot_date(timestamps_smooth, values_smooth, label=user, ls='-', markersize=0)
             except:
-                raise ValueError(f"Not enough trend data for: {user}")   
+                print(f"Not enough trend data to smooth: {user}")
+                ax.plot_date(stat_item[user].timestamps, stat_item[user].values, label=user, ls='-', markersize=0)
         
         ax.xaxis.set_major_locator(mdates.MonthLocator())
         ax.xaxis.set_major_formatter(mdates.DateFormatter("%b"))
