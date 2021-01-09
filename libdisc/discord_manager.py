@@ -4,6 +4,7 @@ from discord import TextChannel
 from discord_analytics.analytics_engine import AnalyticsEngine
 from libdisc.database_manager import DatabaseManager
 from libdisc.media_manager import MediaManager
+from libdisc.plot_manager import PlotManager
 
 
 class DiscordManager:
@@ -11,11 +12,13 @@ class DiscordManager:
     This class serves as the primary orchestrator for any data exported from discord server.
     """
 
-    def __init__(self, db_manager: DatabaseManager, analytics_engine: AnalyticsEngine, media_manager: MediaManager):
+    def __init__(self, db_manager: DatabaseManager, analytics_engine: AnalyticsEngine, media_manager: MediaManager,
+                 plot_manager: PlotManager):
         # dict where key is channel id and value last fetched timestamp
         self.db_manager = db_manager
         self.analytics_engine = analytics_engine
         self.media_manager = media_manager
+        self.plot_manager = plot_manager
 
     async def store_latest_chat_messages(self, channel: TextChannel, is_backfill: bool = False) -> None:
         """
@@ -61,7 +64,7 @@ class DiscordManager:
 
     def handle_gif_cooldown(self, user_name: str, message_ts: int) -> str:
         """
-        Handle's whether or not the bot should post a Gif to the discord Channel.
+        Handles whether or not the bot should post a Gif to the discord Channel.
 
         @param user_name: A Discord User's name
         @param message_ts: Timestamp of the latest message sent by user.
@@ -87,4 +90,19 @@ class DiscordManager:
         @return: None
         """
         self.db_manager.upsert_new_gif_entry(user_name=user_name, keyword=keyword)
+
+    def handle_trend_command(self, channel: TextChannel, message_ts: int, week_limit: int=30) -> str:
+        """
+        Creates a trend plot displaying user's char weekly statistics.
+
+        @param channel: A Discord's channel object
+        @param message_ts: Timestamp of the latest message sent.
+        @param week_limit: Number of weeks to show in trend relative to current time.
+        @return: Filename of the trend image (png) file
+        """
+        sec_in_week = 60*60*24*7
+        limit_ts = (int(message_ts/sec_in_week) - week_limit) * sec_in_week
+        stats_item = self.analytics_engine.get_stats_grouped_by_time(channel.id, limit_ts)
+        filename = self.plot_manager.generate_trend_image(stats_item)
+        return filename
 

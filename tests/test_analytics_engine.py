@@ -3,6 +3,7 @@ import pytest
 
 from db.db import DB
 from discord_analytics.analytics_engine import AnalyticsEngine
+from libdisc.plot_manager import PlotManager
 
 @pytest.mark.parametrize ("dbpath,channel_id,output",
 [
@@ -30,3 +31,18 @@ def test_db_analytics(dbpath,channel_id,output) -> None:
         result = error_msg
 
     assert(str(result) == output)
+
+
+
+# def test_db_analytics(dbpath,channel_id,output) -> None:
+#     try:
+#         DB.get_instance().setup_db(dbpath)
+#         analytics_engine = AnalyticsEngine()
+#         result = analytics_engine.get_stats_grouped_by_time(channel_id)
+#     except Exception as error_msg:
+#         result = error_msg
+
+
+#     filename = PlotManager().generate_trend_image(result)
+#     print(filename)
+#     assert(str(result) == output)
