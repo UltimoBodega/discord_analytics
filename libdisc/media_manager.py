@@ -29,8 +29,11 @@ class MediaManager:
         except ApiException as e:
             raise ValueError("Exception when calling DefaultApi->gifs_search_get: %s\n" % e)
 
-
-        data_element = random.choice(list(api_response.data))
-        gif_url = data_element.bitly_gif_url
+        gif_url = ""
+        if api_response.data:
+            data_element = random.choice(list(api_response.data))
+            gif_url = data_element.bitly_gif_url
+        else:
+            print(f"No gif found for keyword {keyword}")
         
         return gif_url
