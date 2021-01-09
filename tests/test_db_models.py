@@ -10,6 +10,7 @@ from libdisc.database_manager import DatabaseManager
 from libdisc.discord_manager import DiscordManager
 from libdisc.media_manager import MediaManager
 from libdisc.models.base_mixin import BaseModel
+from libdisc.plot_manager import PlotManager
 
 def test_gif_db() -> None:
     """
@@ -35,9 +36,10 @@ def test_gif_db() -> None:
     DB.get_instance().setup_db(db_url)
     analytics_engine = AnalyticsEngine()
     database_manager = DatabaseManager()
+    plot_manager = PlotManager()
     media_manager = MediaManager(gif_dummy_key)
     discord_manager = DiscordManager(db_manager=database_manager, analytics_engine=analytics_engine,
-                                    media_manager=media_manager)
+                                    media_manager=media_manager, plot_manager=plot_manager)
 
 
     # Query empty DB for Bob - should return nothing

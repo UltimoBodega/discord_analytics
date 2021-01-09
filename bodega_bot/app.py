@@ -1,5 +1,6 @@
 import random
 from datetime import datetime, timezone
+import discord
 from discord.ext import commands
 
 from app_configs.config_manager import ConfigManager
@@ -7,6 +8,8 @@ from discord_analytics.analytics_engine import AnalyticsEngine
 from libdisc.database_manager import DatabaseManager
 from libdisc.discord_manager import DiscordManager
 from libdisc.media_manager import MediaManager
+from libdisc.plot_manager import PlotManager
+
 
 def bodega_bot () -> None:
     """
@@ -15,10 +18,11 @@ def bodega_bot () -> None:
     client = commands.Bot(command_prefix='.')
 
     analytics_engine = AnalyticsEngine()
+    plot_manager = PlotManager()
     database_manager = DatabaseManager()
     media_manager = MediaManager(ConfigManager.get_instance().get_giphy_api_key())
     discord_manager = DiscordManager(db_manager=database_manager, analytics_engine=analytics_engine,
-                                     media_manager=media_manager)
+                                     media_manager=media_manager, plot_manager=plot_manager)
 
     @client.event
     async def on_ready():
@@ -38,6 +42,20 @@ def bodega_bot () -> None:
             await message.channel.send(f"Fetching character count by user......")
             await discord_manager.store_latest_chat_messages(channel=message.channel)
             await message.channel.send(discord_manager.send_character_analytics(message.channel))
+
+        if str(message.content).startswith('.trend'):
+            latest_message = message.content.split(" ")
+            keyword = " ".join(latest_message[1: len(latest_message)])
+            week_limit = 30
+            try:
+                week_limit = int(keyword)
+            except:
+                print(f"Bad .trend parameter! Using default {week_limit}")
+
+            await message.channel.send(f"Fetching character count by user......")
+            await discord_manager.store_latest_chat_messages(channel=message.channel)
+            filename = discord_manager.handle_trend_command(channel=message.channel, message_ts=utc_time, week_limit=week_limit)
+            await message.channel.send(file=discord.File(filename))
 
         if str(message.content).startswith('.keyword'):
             latest_message = message.content.split(" ")

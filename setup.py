@@ -26,7 +26,8 @@ requires = ['aiohttp==3.6.3',
             'SQLAlchemy==1.3.22',
             'mypy==0.790',
             'flake8==3.8.4',
-            'giphy-client==1.0.0']
+            'giphy-client==1.0.0',
+            'scipy==1.6.0']
 
 with open('bodega_bot/version.py') as in_file:
     exec(in_file.read())
