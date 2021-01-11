@@ -35,7 +35,7 @@ def bodega_bot () -> None:
         if message.author == client.user:
             return
 
-        author = message.author.name
+        author = message.author
         utc_time = int(message.created_at.replace(tzinfo=timezone.utc).timestamp())
 
         if str(message.content).startswith('.stats'):
@@ -49,7 +49,7 @@ def bodega_bot () -> None:
             week_limit = 30
             try:
                 week_limit = int(keyword)
-            except:
+            except ValueError:
                 print(f"Bad .trend parameter! Using default {week_limit}")
 
             await message.channel.send(f"Fetching character count by user......")
@@ -74,7 +74,7 @@ def bodega_bot () -> None:
             print(datetime.utcfromtimestamp(utc_time))
 
         if not str(message.content).startswith('.'):
-            gif_url = discord_manager.handle_gif_cooldown(user_name=author, message_ts=utc_time)
+            gif_url = discord_manager.handle_gif_cooldown(author=author, message_ts=utc_time)
             if gif_url:
                 await message.channel.send(gif_url)
 

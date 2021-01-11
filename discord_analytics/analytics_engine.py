@@ -28,9 +28,9 @@ class AnalyticsEngine:
         Get ths total character count for all the users for the specified channel
 
         @param channel_id:
-        @return: Dictionary of {user_name: chracter_count}
+        @return: Dictionary of {user_name: character_count}
         """
-        with DB.get_instance().make_session() as  db_session:
+        with DB.get_instance().make_session() as db_session:
             return {user_name: character_count for user_name, character_count in \
                     (db_session.query(
                         User.name, func.sum(Message.char_count))
