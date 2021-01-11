@@ -8,6 +8,26 @@ Bodega-Bot is a Discord bot that can be configured to monitor and produce humoro
 pip install bodega-bot
 ```
 
+## Usage
+
+### CLI
+
+To spin up a simple bodega-bot:
+
+```
+$ bodega-bot -b <your bot token>
+```
+
+Refer to the **Options** section below for all the different optional arguments that bodega-bot supports.
+
+### Configuration file
+
+It is possible to pass the inputs to bodega-bot through a .json configuration file. If done this way, the path to the config file needs to be passed as an input:
+
+```
+$ bodega-bot -c /path_to_config_file/config.json
+```
+
 ## Options
 
 | Argument                         | Description                        |
@@ -20,9 +40,11 @@ pip install bodega-bot
 
 ## Discord Bot Commands
 
-| Command  | Description                                                    |
-| -------- | -------------------------------------------------------------- |
-| `.stats` | Ranks users in descending order by total number of chars typed |
+| Command                    | Description                                                                                                    |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `.stats`                   | Ranks users in descending order by total number of chars typed.                                                |
+| `.trend <number of weeks>` | Uploads a trend plot of user's statistics over the past `number of weeks`.                                     |
+| `.keyword <user keyword>`  | Automatically posts a gif for a particular user based on `user keyword`. This action is on a 12 hour cooldown. |
 
 ## Screenshots
 
