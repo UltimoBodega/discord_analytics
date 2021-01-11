@@ -1,6 +1,6 @@
 # Bodega Bot
 
-[![PyPI](https://img.shields.io/badge/pypi-v0.0.1-blue)](https://pypi.org/project/bodega-bot/)
+[![PyPI](https://img.shields.io/badge/pypi-v0.0.2-blue)](https://pypi.org/project/bodega-bot/)
 
 Bodega-Bot is a Discord bot that can be configured to monitor and produce humorous analytics for Discord channels.
 
