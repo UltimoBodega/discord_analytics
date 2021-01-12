@@ -1,36 +1,34 @@
 import context
-import pytest
+from typing import List
 
 from db.db import DB
 from discord_analytics.analytics_engine import AnalyticsEngine
-from libdisc.plot_manager import PlotManager
+from libdisc.database_manager import DatabaseManager
+from libdisc.dataclasses.discord_objects import DiscordUser
 
-@pytest.mark.parametrize ("dbpath,channel_id,output",
-[
+def _get_sample_users() -> List[DiscordUser]:
+    return [DiscordUser("John", "Jonny", "1234"),
+         DiscordUser("Jane", "Jenny", "4312"),
+         DiscordUser("Bob", "Bobby", "3134"),
+         DiscordUser("Michael", "Mike", "2312")]
 
-#TC01.0: Simple success for char count
-('sqlite:///'+context.curr_path+'/tests/support/bodega_discord.db', 790004680604123168, "{'Brikta': 97, 'Demmy': 80, 'Digital': 67, 'bodega-bot': 1110, 'bodega-test-bot': 38, 'ulix': 67}"),
-
-#TC02.0: Fetching data for dummy channel ID
-('sqlite:///'+context.curr_path+'/tests/support/bodega_discord.db', 0, "{}"),
-
-#TC03.0: Fetching data for non integer channel ID
-('sqlite:///'+context.curr_path+'/tests/support/bodega_discord.db', "dummy_str", "{}"),
-
-#TC04.0: Bad filepath+filename for db
-('/bodega_discord.db', 790004680604123168, "Could not parse rfc1738 URL from string '/bodega_discord.db'"),
-
-])
-
-def test_db_analytics(dbpath,channel_id,output) -> None:
-    try:
-        DB.get_instance().setup_db(dbpath)
+def test_db_analytics() -> None:
+        sample_users = _get_sample_users()
+        DB.get_instance().setup_db('sqlite://')
         analytics_engine = AnalyticsEngine()
-        result = analytics_engine.get_user_by_char_count(channel_id)
-    except Exception as error_msg:
-        result = error_msg
+        database_manager = DatabaseManager()
+        channel_id = 0
+        for i, user in  enumerate(sample_users):
+            database_manager.add_new_message(discord_user=user,
+                                             timestamp=i,
+                                             message_channel_id=channel_id,
+                                             message_char_count=i * 10,
+                                             message_word_count=i * 20)
 
-    assert(str(result) == output)
+        result = analytics_engine.get_user_by_char_count(channel_id)
+
+        assert result == {'John' : 0, 'Jane' : 10, 'Bob' : 20, 'Michael' : 30}
+
 
 
 

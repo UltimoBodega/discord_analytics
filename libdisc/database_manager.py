@@ -3,6 +3,7 @@ from typing import Dict, Set, Tuple
 from sqlalchemy import desc
 
 from db.db import DB
+from libdisc.dataclasses.discord_objects import DiscordUser
 from libdisc.models.message import Message
 from libdisc.models.user import User
 from libdisc.models.gif import Gif
@@ -14,7 +15,7 @@ class DatabaseManager:
     """
 
     def __init__(self) -> None:
-        self.user_cache: Dict[str, int] = {}
+        self.user_cache: Dict[Tuple[str, str], int] = {}
         self.message_cache: Set[Tuple[int, int, int]] = set()
         self.gif_cache: Dict[int, Tuple[str, int]] = {}
 
@@ -30,7 +31,7 @@ class DatabaseManager:
                     self.message_cache.add((user_id, channel_id, timestamp))
             # User cache
             for user in db_session.query(User):
-                self.user_cache[user.name] = user.id
+                self.user_cache[(user.name, user.discriminator)] = user.id
             # Gif cache
             for gif in db_session.query(Gif):
                 self.gif_cache[gif.user_id] = (gif.keyword, gif.timestamp)
@@ -48,22 +49,22 @@ class DatabaseManager:
         self.gif_cache.clear()
 
     def add_new_message(self,
-                        user_name: str,
+                        discord_user: DiscordUser,
                         timestamp: int,
                         message_channel_id: int,
                         message_word_count: int,
                         message_char_count: int) -> None:
         """
         Inserts message into the db, as well as user if it doesn't exist.
-        @param user_name: The message's user name
-        @param timestamp: The message's timestamp in unixstimestamp
-        @param message_channel_id: The message's channel id
-        @param message_word_count: The message's word count
-        @param message_char_count: The message's character count
+        @param discord_user: The message's user.
+        @param timestamp: The message's timestamp in unix-timestamp.
+        @param message_channel_id: The message's channel id.
+        @param message_word_count: The message's word count.
+        @param message_char_count: The message's character count.
         """
         with DB.get_instance().make_session() as  db_session:
             user_id = User.get_or_create(db_session=db_session,
-                                         user_name=user_name,
+                                         discord_user = discord_user,
                                          cache=self.user_cache)
             Message.add_message(db_session=db_session,
                                 user_id=user_id,
@@ -90,17 +91,17 @@ class DatabaseManager:
             return timestamp[0] if timestamp else 0
 
 
-    def get_last_gif_preference(self, user_name: str) -> Tuple[str, int]:
+    def get_last_gif_preference(self, discord_user: DiscordUser) -> Tuple[str, int]:
         """
         Returns the latest Gif preference for a particular user.
 
-        @param user_name: The User name for the Gif preference.
+        @param discord_user: The Discord user for the Gif preference.
         @return: Tuple with The Gif keyword string to be user for the API query and
                  the latest timestamp corresponding to when the bot posted a Gif for user_id
         """
         with DB.get_instance().make_session() as  db_session:
             user_id = User.get_or_create(db_session=db_session,
-                                         user_name=user_name,
+                                         discord_user=discord_user,
                                          cache=self.user_cache)
 
             (keyword, timestamp) = Gif.read_gif_preference(db_session=db_session,
@@ -110,18 +111,18 @@ class DatabaseManager:
             return keyword, timestamp
 
 
-    def upsert_new_gif_entry(self, user_name: str, keyword: str, timestamp:int=0) -> None:
+    def upsert_new_gif_entry(self, discord_user: DiscordUser, keyword: str, timestamp:int=0) -> None:
         """
         Updates or creates a gif entry for a user in the DB.
 
-        @param user_name: The User name for the Gif preference.
+        @param discord_user: The Discord user name for the Gif preference.
         @param keyword: The Gif keyword string to be user for the API query
         @param timestamp: The latest timestamp corresponding to when the bot posted a Gif for user_id
         @return: None
         """
         with DB.get_instance().make_session() as  db_session:
             user_id = User.get_or_create(db_session=db_session,
-                                         user_name=user_name,
+                                         discord_user= discord_user,
                                          cache=self.user_cache)
 
             Gif.upsert_gif_entry(db_session=db_session,
