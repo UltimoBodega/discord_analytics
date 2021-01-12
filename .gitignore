@@ -127,3 +127,8 @@ devops_tasks/config.json
 app_configs/config.json
 #Environment
 .idea
+*.png
+*.jpeg
+*.jpg
+*.pdf
+*.bitmap
