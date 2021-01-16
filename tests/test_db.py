@@ -1,4 +1,3 @@
-import context  # noqa
 from db.db import DB
 
 

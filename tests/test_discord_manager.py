@@ -1,5 +1,3 @@
-import context  # noqa
-
 from db.db import DB
 from discord_analytics.analytics_engine import AnalyticsEngine
 from libdisc.database_manager import DatabaseManager
