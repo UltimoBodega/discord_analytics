@@ -24,11 +24,11 @@ class DatabaseManager:
         Loads all caches
         @return: None
         """
-        with DB.get_instance().make_session() as  db_session:
+        with DB.get_instance().make_session() as db_session:
             # Message cache
             for user_id, channel_id, timestamp in db_session.query(
-                Message.user_id, Message.channel_id, Message.timestamp):
-                    self.message_cache.add((user_id, channel_id, timestamp))
+                    Message.user_id, Message.channel_id, Message.timestamp):
+                self.message_cache.add((user_id, channel_id, timestamp))
             # User cache
             for user in db_session.query(User):
                 self.user_cache[(user.name, user.discriminator)] = user.id
@@ -62,9 +62,9 @@ class DatabaseManager:
         @param message_word_count: The message's word count.
         @param message_char_count: The message's character count.
         """
-        with DB.get_instance().make_session() as  db_session:
+        with DB.get_instance().make_session() as db_session:
             user_id = User.get_or_create(db_session=db_session,
-                                         discord_user = discord_user,
+                                         discord_user=discord_user,
                                          cache=self.user_cache)
             Message.add_message(db_session=db_session,
                                 user_id=user_id,
@@ -74,15 +74,15 @@ class DatabaseManager:
                                 char_count=message_char_count,
                                 cache=self.message_cache)
 
-
     def get_last_message_timestamp(self, message_channel_id: int) -> int:
         """
         Returns the latest timestamp from message from a particular channel.
 
         @param message_channel_id: The message's channel id
-        @return: last fetched timestamp of the channel's messages if no messages then 0
+        @return: last fetched timestamp of the channel's messages
+        if no messages then 0
         """
-        with DB.get_instance().make_session() as  db_session:
+        with DB.get_instance().make_session() as db_session:
             timestamp = (db_session.query(Message.timestamp)
                          .filter(Message.channel_id == message_channel_id)
                          .order_by(desc(Message.timestamp))
@@ -90,39 +90,42 @@ class DatabaseManager:
 
             return timestamp[0] if timestamp else 0
 
-
-    def get_last_gif_preference(self, discord_user: DiscordUser) -> Tuple[str, int]:
+    def get_last_gif_preference(self,
+                                discord_user: DiscordUser) -> Tuple[str, int]:
         """
         Returns the latest Gif preference for a particular user.
 
         @param discord_user: The Discord user for the Gif preference.
-        @return: Tuple with The Gif keyword string to be user for the API query and
-                 the latest timestamp corresponding to when the bot posted a Gif for user_id
+        @return: Tuple with The Gif keyword string to be user for the
+        API query and the latest timestamp corresponding to when the bot
+        posted a Gif for user_id
         """
-        with DB.get_instance().make_session() as  db_session:
+        with DB.get_instance().make_session() as db_session:
             user_id = User.get_or_create(db_session=db_session,
                                          discord_user=discord_user,
                                          cache=self.user_cache)
 
-            (keyword, timestamp) = Gif.read_gif_preference(db_session=db_session,
-                                                            user_id=user_id,
-                                                            cache=self.gif_cache)
+            (keyword, timestamp) = Gif.read_gif_preference(
+                db_session=db_session,
+                user_id=user_id,
+                cache=self.gif_cache)
 
             return keyword, timestamp
 
-
-    def upsert_new_gif_entry(self, discord_user: DiscordUser, keyword: str, timestamp:int=0) -> None:
+    def upsert_new_gif_entry(self, discord_user: DiscordUser, keyword: str,
+                             timestamp: int = 0) -> None:
         """
         Updates or creates a gif entry for a user in the DB.
 
         @param discord_user: The Discord user name for the Gif preference.
         @param keyword: The Gif keyword string to be user for the API query
-        @param timestamp: The latest timestamp corresponding to when the bot posted a Gif for user_id
+        @param timestamp: The latest timestamp corresponding to when the
+        bot posted a Gif for user_id
         @return: None
         """
-        with DB.get_instance().make_session() as  db_session:
+        with DB.get_instance().make_session() as db_session:
             user_id = User.get_or_create(db_session=db_session,
-                                         discord_user= discord_user,
+                                         discord_user=discord_user,
                                          cache=self.user_cache)
 
             Gif.upsert_gif_entry(db_session=db_session,

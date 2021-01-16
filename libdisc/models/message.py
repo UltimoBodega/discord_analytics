@@ -40,7 +40,8 @@ class Message(BaseModel):
         @param timestamp: Given timestamp
         @param word_count: The word count of the message
         @param char_count: The character count of the message.
-        @param cache: Optional cache to determine if the message already exists in the database
+        @param cache: Optional cache to determine if the message
+        already exists in the database
         @return: None
         """
 
@@ -48,7 +49,8 @@ class Message(BaseModel):
             return
 
         message_count = (db_session.query(func.count(Message.id))
-                         .filter(Message.timestamp == timestamp, Message.user_id == user_id,
+                         .filter(Message.timestamp == timestamp,
+                                 Message.user_id == user_id,
                                  Message.channel_id == channel_id)
                          .scalar())
 

@@ -1,5 +1,6 @@
 import os
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages  # type: ignore
+from bodega_bot import version
 
 requires = ['aiohttp==3.6.3',
             'async-timeout==3.0.1',
@@ -37,9 +38,10 @@ with open(os.path.join(this_directory, 'README.md')) as f:
     long_description = f.read()
 
 setup(name='bodega-bot',
-      version=__version__,
-      description=("bodega-bot is a Discord bot that can be configured to monitor and produce"
-                   " humorous analytics for Discord channels."),
+      version=version.__version__,
+      description=(
+          "bodega-bot is a Discord bot that can be configured to monitor "
+          "and produce humorous analytics for Discord channels."),
       long_description=long_description,
       long_description_content_type='text/markdown',
       url='https://github.com/UltimoBodega/discord_analytics',
@@ -48,6 +50,8 @@ setup(name='bodega-bot',
       license='Public domain',
       packages=find_packages(exclude=['tests']),
       install_requires=requires,
-      entry_points={'console_scripts': ['bodega-bot=bodega_bot.bodega_bot:main'],},
+      entry_points={
+          'console_scripts': ['bodega-bot=bodega_bot.bodega_bot:main'], },
       zip_safe=False,
-      keywords=['Discord', 'bot', 'monitor', 'analytics', 'humorous', 'quotes', 'channel'])
+      keywords=['Discord', 'bot', 'monitor', 'analytics', 'humorous', 'quotes',
+                'channel'])

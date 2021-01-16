@@ -1,5 +1,4 @@
-import random
-import context
+import context  # noqa
 
 from db.db import DB
 from discord_analytics.analytics_engine import AnalyticsEngine
@@ -8,6 +7,7 @@ from libdisc.dataclasses.discord_objects import DiscordUser
 from libdisc.discord_manager import DiscordManager
 from libdisc.media_manager import MediaManager
 from libdisc.plot_manager import PlotManager
+
 
 def test_gif_workflow() -> None:
     """
@@ -31,32 +31,43 @@ def test_gif_workflow() -> None:
     result = {}
     select_person = users[2]
     update_data = (select_person, "Twin Peaks", 75000)
-    output = {'Read empty': ('', 0), 'Initial preference': ('Stranger Things', 0), 'Read update': ('Twin Peaks', 75000)}
+    output = {'Read empty': ('', 0),
+              'Initial preference': ('Stranger Things', 0),
+              'Read update': ('Twin Peaks', 75000)}
 
     DB.get_instance().setup_db("sqlite://")
     analytics_engine = AnalyticsEngine()
     database_manager = DatabaseManager()
     plot_manager = PlotManager()
     media_manager = MediaManager("")
-    discord_manager = DiscordManager(db_manager=database_manager, analytics_engine=analytics_engine,
-                                    media_manager=media_manager, plot_manager=plot_manager)
+    discord_manager = DiscordManager(db_manager=database_manager,
+                                     analytics_engine=analytics_engine,
+                                     media_manager=media_manager,
+                                     plot_manager=plot_manager)
 
     # Query empty DB for Bob - should return nothing
-    result["Read empty"] = discord_manager.db_manager.get_last_gif_preference(select_person)
+    result["Read empty"] = \
+        discord_manager.db_manager.get_last_gif_preference(select_person)
     # discord_manager.db_manager.upsert_new_gif_entry()
 
     for preference in preferences:
         (user_name, keyword, timestamp) = preference
-        discord_manager.db_manager.upsert_new_gif_entry(user_name, keyword, timestamp)
+        discord_manager.db_manager.upsert_new_gif_entry(user_name,
+                                                        keyword,
+                                                        timestamp)
 
     # Read for Bob - should initial preference
-    result["Initial preference"] = discord_manager.db_manager.get_last_gif_preference(select_person)
+    result["Initial preference"] = \
+        discord_manager.db_manager.get_last_gif_preference(select_person)
 
     # Update Bob's preferences
     (user_name, keyword, timestamp) = update_data
-    discord_manager.db_manager.upsert_new_gif_entry(user_name, keyword, timestamp)
+    discord_manager.db_manager.upsert_new_gif_entry(user_name,
+                                                    keyword,
+                                                    timestamp)
 
     # Read for Bob - should initial preference
-    result["Read update"] = discord_manager.db_manager.get_last_gif_preference(select_person)
+    result["Read update"] = \
+        discord_manager.db_manager.get_last_gif_preference(select_person)
 
-    assert(result==output)
+    assert (result == output)
