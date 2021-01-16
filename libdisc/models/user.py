@@ -1,7 +1,7 @@
 from typing import Dict, Tuple
 from sqlalchemy import Column, String, UniqueConstraint, Integer
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import relationship, backref, Session
+from sqlalchemy.orm import Session
 
 from libdisc.dataclasses.discord_objects import DiscordUser
 from libdisc.models.base_mixin import BaseModel
@@ -18,8 +18,9 @@ class User(BaseModel):
     id = Column(Integer, primary_key=True)
     name = Column(String(length=256), server_default='', nullable=False)
     nickname = Column(String(length=256), server_default='', nullable=False)
-    discriminator = Column(String(length=256), server_default='', nullable=False)
-    messages = relationship("Message", backref=backref("user"))
+    discriminator = Column(String(length=256),
+                           server_default='',
+                           nullable=False)
 
     @staticmethod
     def get_or_create(db_session: Session,
