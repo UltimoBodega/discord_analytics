@@ -17,4 +17,4 @@ jobs:
         with:
           python-version: 3.7
       - name: Build
-        run: ./build.sh
+        run: sh "bash ./build.sh"
