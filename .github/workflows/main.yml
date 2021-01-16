@@ -17,4 +17,5 @@ jobs:
         with:
           python-version: 3.7
       - name: Build
-        run: chmod +x "./build.sh"
+        run: |
+        sh ./build.sh
