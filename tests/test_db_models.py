@@ -1,4 +1,3 @@
-import context  # noqa
 from db.db import DB
 from libdisc.dataclasses.discord_objects import DiscordUser
 from libdisc.models.user import User
