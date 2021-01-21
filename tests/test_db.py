@@ -12,5 +12,4 @@ def test_db_connect_fail() -> None:
         DB.get_instance()
         raise Exception('DB instance creation should have failed')
     except Exception as error_msg:
-        assert str(error_msg) == "Could not parse rfc1738 " \
-                                 "URL from string '/fake_db.db'"
+        assert str(error_msg) == "Could not parse rfc1738 URL from string '/fake_db.db'"

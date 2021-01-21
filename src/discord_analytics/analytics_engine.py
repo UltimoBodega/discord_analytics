@@ -34,8 +34,7 @@ class AnalyticsEngine:
         @return: Dictionary of {user_name: character_count}
         """
         with DB.get_instance().make_session() as db_session:
-            return {user_name: character_count for user_name,
-                    character_count in
+            return {user_name: character_count for user_name, character_count in
                     (db_session.query(
                         User.name, func.sum(Message.char_count))
                      .join(Message, Message.user_id == User.id)
@@ -59,8 +58,7 @@ class AnalyticsEngine:
                     User.name,
                     # hack that compensates for SQLite not
                     # having FLOOR function
-                    func.round((Message.timestamp / sec_in_week) - 0.5).label(
-                        "day_time"),
+                    func.round((Message.timestamp / sec_in_week) - 0.5).label("day_time"),
                     func.sum(Message.char_count))
                 .join(Message, Message.user_id == User.id)
                 .filter(Message.channel_id == channel_id)

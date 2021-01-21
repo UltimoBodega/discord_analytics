@@ -36,8 +36,7 @@ class DiscordManager:
         @param is_backfill: Whether or not backfill from beginning of time.
         """
         last_timestamp = self.db_manager.get_last_message_timestamp(channel.id)
-        after = (datetime.utcfromtimestamp(last_timestamp)
-                 if last_timestamp else None)
+        after = (datetime.utcfromtimestamp(last_timestamp) if last_timestamp else None)
 
         if is_backfill:
             after = None
@@ -69,12 +68,9 @@ class DiscordManager:
         @param exclude_bot: Weather or not to include bot statistics.
         @return: a Discord friendly character statistics string.
         """
-        char_count_dict = (self.analytics_engine.
-                           get_user_by_char_count(channel.id))
+        char_count_dict = (self.analytics_engine.get_user_by_char_count(channel.id))
         output_str = '```'
-        for user, count in sorted(char_count_dict.items(),
-                                  key=lambda item: item[1],
-                                  reverse=True):
+        for user, count in sorted(char_count_dict.items(), key=lambda item: item[1], reverse=True):
             if exclude_bot and 'bot' in user:
                 continue
             output_str += f"El {user}: {count}" + '\n'
@@ -97,8 +93,7 @@ class DiscordManager:
         discord_user = DiscordUser(author.name,
                                    author.display_name,
                                    author.discriminator)
-        (keyword, gif_timestamp) = self.db_manager.get_last_gif_preference(
-            discord_user)
+        (keyword, gif_timestamp) = self.db_manager.get_last_gif_preference(discord_user)
 
         if keyword:
             if message_ts - gif_timestamp >= 60 * 60 * 12:
@@ -119,11 +114,10 @@ class DiscordManager:
         @param keyword: Keyword used to find a gif.
         @return: None
         """
-        self.db_manager.upsert_new_gif_entry(
-            discord_user=DiscordUser(author.name,
-                                     author.display_name,
-                                     author.discriminator),
-            keyword=keyword)
+        self.db_manager.upsert_new_gif_entry(discord_user=DiscordUser(author.name,
+                                                                      author.display_name,
+                                                                      author.discriminator),
+                                             keyword=keyword)
 
     def handle_trend_command(self,
                              channel: TextChannel, message_ts: int,
@@ -139,7 +133,6 @@ class DiscordManager:
         """
         sec_in_week = 60 * 60 * 24 * 7
         limit_ts = (int(message_ts / sec_in_week) - week_limit) * sec_in_week
-        stats_item = self.analytics_engine.get_stats_grouped_by_time(
-            channel.id, limit_ts)
+        stats_item = self.analytics_engine.get_stats_grouped_by_time(channel.id, limit_ts)
         filename = self.plot_manager.generate_trend_image(stats_item)
         return filename

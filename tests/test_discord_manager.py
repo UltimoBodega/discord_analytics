@@ -55,8 +55,7 @@ def test_gif_workflow() -> None:
                                                         timestamp)
 
     # Read for Bob - should initial preference
-    result["Initial preference"] = \
-        discord_manager.db_manager.get_last_gif_preference(select_person)
+    result["Initial preference"] = discord_manager.db_manager.get_last_gif_preference(select_person)
 
     # Update Bob's preferences
     (user_name, keyword, timestamp) = update_data
@@ -65,7 +64,6 @@ def test_gif_workflow() -> None:
                                                     timestamp)
 
     # Read for Bob - should initial preference
-    result["Read update"] = \
-        discord_manager.db_manager.get_last_gif_preference(select_person)
+    result["Read update"] = discord_manager.db_manager.get_last_gif_preference(select_person)
 
     assert (result == output)

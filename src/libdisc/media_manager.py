@@ -1,4 +1,5 @@
 import random
+
 import giphy_client  # type: ignore
 from giphy_client.rest import ApiException  # type: ignore
 
@@ -24,15 +25,13 @@ class MediaManager:
         @return gif_url: The message's channel id
         """
         try:
-            api_response = \
-                self.giphy_api.gifs_search_get(self.giphy_key,
-                                               keyword,
-                                               limit=limit,
-                                               rating=rating,
-                                               lang=lang, fmt='json')
+            api_response = self.giphy_api.gifs_search_get(self.giphy_key,
+                                                          keyword,
+                                                          limit=limit,
+                                                          rating=rating,
+                                                          lang=lang, fmt='json')
         except ApiException as e:
-            raise ValueError(
-                "Exception when calling DefaultApi->gifs_search_get: %s\n" % e)
+            raise ValueError("Exception when calling DefaultApi->gifs_search_get: %s\n" % e)
 
         gif_url = ""
         if api_response.data:

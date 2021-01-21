@@ -1,11 +1,12 @@
 import os
 from typing import Dict, Tuple, Optional, List
-import matplotlib.pyplot as plt  # type: ignore
+
 import matplotlib.dates as mdates  # type: ignore
+import matplotlib.pyplot as plt  # type: ignore
 import numpy as np  # type: ignore
+from scipy.interpolate import make_interp_spline, BSpline  # type: ignore
 
 from discord_analytics.analytics_engine import StatItem
-from scipy.interpolate import make_interp_spline, BSpline  # type: ignore
 
 
 class PlotManager:
@@ -17,8 +18,7 @@ class PlotManager:
         pass
 
     def _prepare_stat_items(self,
-                            stat_item: Optional[Dict[str, StatItem]]
-                            ) -> Tuple[int, int, int, int]:
+                            stat_item: Optional[Dict[str, StatItem]]) -> Tuple[int, int, int, int]:
         """
         Pre-process data in a StatItem.
 
@@ -54,8 +54,7 @@ class PlotManager:
         # self._prepare_stat_items(stat_item)
 
         if stat_item is None:
-            print(
-                "Empty StatItem - Possible no data in DB for discord channel.")
+            print("Empty StatItem - Possible no data in DB for discord channel.")
             return ""
 
         fig = plt.figure(figsize=(8, 6), dpi=300)
@@ -63,14 +62,12 @@ class PlotManager:
 
         for user in stat_item:
             try:
-                timestamps_smooth = \
-                    np.linspace(min(stat_item[user].timestamps),
-                                max(stat_item[user].timestamps),
-                                300)
-                spl = \
-                    make_interp_spline(stat_item[user].timestamps,
-                                       stat_item[user].values,
-                                       k=3)  # type: BSpline
+                timestamps_smooth = np.linspace(min(stat_item[user].timestamps),
+                                                max(stat_item[user].timestamps),
+                                                300)
+                spl = make_interp_spline(stat_item[user].timestamps,
+                                         stat_item[user].values,
+                                         k=3)  # type: BSpline
                 values_smooth = spl(timestamps_smooth)
                 ax.plot_date(timestamps_smooth, values_smooth, label=user,
                              ls='-', markersize=0)

@@ -41,8 +41,7 @@ class ConfigManager:
             self.config_dict = json.load(open(filepath))
         else:
             if filepath:
-                print(f'Not loading config file: {filepath} '
-                      f'since it does not exist')
+                print(f'Not loading config file: {filepath} since it does not exist')
 
     def get_db_url(self) -> str:
         """
@@ -68,8 +67,7 @@ class ConfigManager:
         """
         config_path = arguments["config_path"]
         if not config_path:
-            config_path = f'{str(pathlib.Path(__file__).parent.absolute())}' \
-                          f'/config.json'
+            config_path = f'{str(pathlib.Path(__file__).parent.absolute())}/config.json'
         self._load_config_file(config_path)
         for argument, value in arguments.items():
             if argument not in self.config_dict:
@@ -112,5 +110,4 @@ def user_input() -> None:
 
     if ConfigManager.get_instance().get_bot_token() == "":
         parser.print_help()
-        raise ValueError('Must provide a Discord Bot '
-                         'token OR a config file containing a Bot token')
+        raise ValueError('Must provide a Discord Bot token OR a config file containing a Bot token')

@@ -6,8 +6,7 @@ from db.db import DB
 # ------------- Main Program ------------- #
 def main():
     app_conf.user_input()
-    DB.get_instance().setup_db(
-        app_conf.ConfigManager.get_instance().get_db_url())
+    DB.get_instance().setup_db(app_conf.ConfigManager.get_instance().get_db_url())
     app.bodega_bot()
 
 
