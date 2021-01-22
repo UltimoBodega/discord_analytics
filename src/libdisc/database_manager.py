@@ -26,8 +26,9 @@ class DatabaseManager:
         """
         with DB.get_instance().make_session() as db_session:
             # Message cache
-            for user_id, channel_id, timestamp in db_session.query(
-                    Message.user_id, Message.channel_id, Message.timestamp):
+            for user_id, channel_id, timestamp in db_session.query(Message.user_id,
+                                                                   Message.channel_id,
+                                                                   Message.timestamp):
                 self.message_cache.add((user_id, channel_id, timestamp))
             # User cache
             for user in db_session.query(User):
@@ -105,15 +106,13 @@ class DatabaseManager:
                                          discord_user=discord_user,
                                          cache=self.user_cache)
 
-            (keyword, timestamp) = Gif.read_gif_preference(
-                db_session=db_session,
-                user_id=user_id,
-                cache=self.gif_cache)
+            (keyword, timestamp) = Gif.read_gif_preference(db_session=db_session,
+                                                           user_id=user_id,
+                                                           cache=self.gif_cache)
 
             return keyword, timestamp
 
-    def upsert_new_gif_entry(self, discord_user: DiscordUser, keyword: str,
-                             timestamp: int = 0) -> None:
+    def upsert_new_gif_entry(self, discord_user: DiscordUser, keyword: str, timestamp: int = 0) -> None:
         """
         Updates or creates a gif entry for a user in the DB.
 

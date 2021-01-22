@@ -1,5 +1,6 @@
 import random
 from datetime import datetime, timezone
+
 import discord  # type: ignore
 from discord.ext import commands  # type: ignore
 
@@ -20,8 +21,7 @@ def bodega_bot() -> None:
     analytics_engine = AnalyticsEngine()
     plot_manager = PlotManager()
     database_manager = DatabaseManager()
-    media_manager = MediaManager(
-        ConfigManager.get_instance().get_giphy_api_key())
+    media_manager = MediaManager(ConfigManager.get_instance().get_giphy_api_key())
     discord_manager = DiscordManager(
         db_manager=database_manager,
         analytics_engine=analytics_engine,
@@ -40,16 +40,13 @@ def bodega_bot() -> None:
             return
 
         author = message.author
-        utc_time = int(message.created_at.replace(
-            tzinfo=timezone.utc).timestamp())
+        utc_time = int(message.created_at.replace(tzinfo=timezone.utc).timestamp())
 
         if str(message.content).startswith('.stats'):
             await message.channel.send("Fetching character count by user"
                                        "......")
-            await discord_manager.store_latest_chat_messages(
-                channel=message.channel)
-            await message.channel.send(
-                discord_manager.send_character_analytics(message.channel))
+            await discord_manager.store_latest_chat_messages(channel=message.channel)
+            await message.channel.send(discord_manager.send_character_analytics(message.channel))
 
         if str(message.content).startswith('.trend'):
             latest_message = message.content.split(" ")
@@ -62,8 +59,7 @@ def bodega_bot() -> None:
 
             await message.channel.send("Fetching character count by user"
                                        "......")
-            await discord_manager.store_latest_chat_messages(
-                channel=message.channel)
+            await discord_manager.store_latest_chat_messages(channel=message.channel)
             filename = discord_manager.handle_trend_command(
                 channel=message.channel,
                 message_ts=utc_time,
@@ -77,11 +73,8 @@ def bodega_bot() -> None:
             await message.channel.send(f"Upserted keyword: {keyword}")
 
         if str(message.content).startswith('.backfill'):
-            await message.channel.send("Forcing message backfill insertion "
-                                       "this might take a while")
-            await discord_manager.store_latest_chat_messages(
-                channel=message.channel,
-                is_backfill=True)
+            await message.channel.send("Forcing message backfill insertion this might take a while")
+            await discord_manager.store_latest_chat_messages(channel=message.channel, is_backfill=True)
             await message.channel.send("Backfill complete!")
 
         if str(message.content).startswith('.debug'):
@@ -90,23 +83,19 @@ def bodega_bot() -> None:
             print(datetime.utcfromtimestamp(utc_time))
 
         if not str(message.content).startswith('.'):
-            gif_url = discord_manager.handle_gif_cooldown(author=author,
-                                                          message_ts=utc_time)
+            gif_url = discord_manager.handle_gif_cooldown(author=author, message_ts=utc_time)
             if gif_url:
                 await message.channel.send(gif_url)
 
         groserias = ["joto", "puto", "maricon"]
 
-        responses = ["Usaste un termino derrogativo en contra de "
-                     "nuestros amigxs homosexuales",
+        responses = ["Usaste un termino derrogativo en contra de nuestros amigxs homosexuales",
                      f"Not chill {author}, that's homophobic",
                      "Oye, que feo eres :/ ser homosexual no es malo",
                      f"¿Quién te crees {author}? ¿Molotov?",
-                     f"{author}, you are willfully ignoring the virulently "
-                     f"homophobic undertones of your statement."]
+                     f"{author}, you are willfully ignoring the virulently homophobic undertones of your statement."]
 
-        if any(groseria in str(message.content).lower()
-               for groseria in groserias):
+        if any(groseria in str(message.content).lower() for groseria in groserias):
             await message.channel.send(f"{random.choice(responses)}")
 
     client.run(ConfigManager.get_instance().get_bot_token())

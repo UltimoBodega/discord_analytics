@@ -1,9 +1,10 @@
 from typing import Tuple, Dict
-from sqlalchemy import Column, String, UniqueConstraint, Integer, ForeignKey, \
-    BigInteger
-from libdisc.models.base_mixin import Base
-from sqlalchemy.orm import Session
+
+from sqlalchemy import Column, String, UniqueConstraint, Integer, ForeignKey, BigInteger
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
+
+from libdisc.models.base_mixin import Base
 
 
 class Gif(Base):
@@ -38,16 +39,13 @@ class Gif(Base):
         @return: None
         """
 
-        gif = db_session.query(Gif). \
-            filter(Gif.user_id == user_id).one_or_none()
+        gif = db_session.query(Gif).filter(Gif.user_id == user_id).one_or_none()
 
         if gif is None:
             db_session.add(
                 Gif(user_id=user_id, keyword=keyword, timestamp=timestamp))
         else:
-            db_session.query(Gif). \
-                filter(Gif.user_id == user_id). \
-                update({"keyword": keyword, "timestamp": timestamp})
+            db_session.query(Gif).filter(Gif.user_id == user_id).update({"keyword": keyword, "timestamp": timestamp})
 
         try:
             db_session.commit()
@@ -59,10 +57,9 @@ class Gif(Base):
             cache[user_id] = (keyword, timestamp)
 
     @staticmethod
-    def read_gif_preference(
-            db_session: Session,
-            user_id: int,
-            cache: Dict[int, Tuple[str, int]] = None) -> Tuple[str, int]:
+    def read_gif_preference(db_session: Session,
+                            user_id: int,
+                            cache: Dict[int, Tuple[str, int]] = None) -> Tuple[str, int]:
         """
         Reads the latest timestamp for a user in the DB.
 
@@ -80,9 +77,7 @@ class Gif(Base):
         timestamp = 0
         keyword = ""
 
-        gif = (db_session.query(Gif)
-               .filter(Gif.user_id == user_id)
-               .one_or_none())
+        gif = db_session.query(Gif).filter(Gif.user_id == user_id).one_or_none()
 
         if gif is not None:
             timestamp = gif.timestamp
