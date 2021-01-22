@@ -77,6 +77,11 @@ def bodega_bot() -> None:
             await discord_manager.store_latest_chat_messages(channel=message.channel, is_backfill=True)
             await message.channel.send("Backfill complete!")
 
+        if str(message.content).startswith('.gif'):
+            latest_message = message.content.split(" ")
+            keyword = " ".join(latest_message[1: len(latest_message)])
+            await message.channel.send(discord_manager.get_random_gif(keyword))
+
         if str(message.content).startswith('.debug'):
             print(message.created_at)
             print(datetime.utcnow())

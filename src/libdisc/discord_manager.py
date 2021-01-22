@@ -106,6 +106,15 @@ class DiscordManager:
 
         return gif_url
 
+    def get_random_gif(self, keyword: str) -> str:
+        """
+        Gets a random gif url from media manager
+
+        @param keyword: keyword used to query gif repository
+        @return: A random gif url associated with the keyword if found else a message saying it wasn't found.
+        """
+        return self.media_manager.get_gif(keyword) or f"No gifs found for keyword: {keyword}"
+
     def upsert_gif_keyword(self, author: discord.User, keyword: str) -> None:
         """
         Inserts a Gif keyword preference for a particular user.
