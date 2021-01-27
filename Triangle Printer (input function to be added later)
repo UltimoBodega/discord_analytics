@@ -1,7 +1,10 @@
-#input feature to change triangle height to be added later
+#Generates an equilateral triangle
+#User input determines the height of the triangle
+height=-1
+while height<0:
+    height= int(input('Enter an integer number greater than 0 here: '))
 x=1
 space=0
-height=20
 while space<height:
     print(" "*(height-space)+ 'x'*x)
     space+=1
