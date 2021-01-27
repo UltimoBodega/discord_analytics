@@ -1,0 +1,7 @@
+x=1
+space=0
+height=20
+while space<height:
+    print(" "*(height-space)+ 'x'*x)
+    space+=1
+    x = x+2
