@@ -96,7 +96,7 @@ class DiscordManager:
         (keyword, gif_timestamp) = self.db_manager.get_last_gif_preference(discord_user)
 
         if keyword:
-            if message_ts - gif_timestamp >= 60 * 60 * 24 * 3: # 3 days
+            if message_ts - gif_timestamp >= 60 * 60 * 24 * 3:  # 3 days
                 gif_url = self.media_manager.get_gif(keyword)
             self.db_manager.upsert_new_gif_entry(
                 discord_user=discord_user,
