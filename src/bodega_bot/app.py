@@ -50,7 +50,7 @@ def bodega_bot() -> None:
     @slash.slash(
         name="trend",
         description="Shows trend of the channel's activity.",
-        guild_ids=[252305427985989650],
+        guild_ids=ConfigManager.get_instance().get_guild_ids(),
         options=[
             create_option(
                 name="week_limit",
