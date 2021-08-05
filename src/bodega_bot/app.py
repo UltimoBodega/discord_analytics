@@ -3,6 +3,8 @@ from datetime import datetime, timezone
 
 import discord  # type: ignore
 from discord.ext import commands  # type: ignore
+from discord_slash import SlashCommand, SlashContext
+from discord_slash.utils.manage_commands import create_choice, create_option
 
 from app_configs.config_manager import ConfigManager
 from discord_analytics.analytics_engine import AnalyticsEngine
@@ -17,6 +19,8 @@ def bodega_bot() -> None:
     Main discord application entry point
     """
     client = commands.Bot(command_prefix='.')
+    
+    slash = SlashCommand(client, sync_commands=True)
 
     analytics_engine = AnalyticsEngine()
     plot_manager = PlotManager()
@@ -34,37 +38,45 @@ def bodega_bot() -> None:
         database_manager.load_cache()
         print('Ready set go!')
 
+    @slash.slash(
+        name="stats",
+        description="Fetches the activity of the channel.",
+        guild_ids=ConfigManager.get_instance().get_guild_ids(),
+    )
+    async def _stats(ctx:SlashContext):
+        await ctx.send("Backfilling stats...")
+        await discord_manager.store_latest_chat_messages(channel=ctx.channel)
+        await ctx.send(discord_manager.send_character_analytics(ctx.channel))
+
+    @slash.slash(
+        name="trend",
+        description="Shows trend of the channel's activity.",
+        guild_ids=[252305427985989650],
+        options=[
+            create_option(
+                name="week_limit",
+                description="Choose week limit.",
+                required=False,
+                option_type=4
+            )
+        ]
+    )
+    async def _trend(ctx:SlashContext, week_limit:int = 30):
+        utc_time = int(ctx.created_at.replace(tzinfo=timezone.utc).timestamp())
+        await ctx.send("Backfilling stats...")
+        await discord_manager.store_latest_chat_messages(channel=ctx.channel)
+        filename = discord_manager.handle_trend_command(
+            channel=ctx.channel,
+            message_ts=utc_time,
+            week_limit=week_limit)
+        await ctx.send(file=discord.File(filename))
+
     @client.event
     async def on_message(message):
         if message.author == client.user:
             return
-
         author = message.author
         utc_time = int(message.created_at.replace(tzinfo=timezone.utc).timestamp())
-
-        if str(message.content).startswith('.stats'):
-            await message.channel.send("Fetching character count by user"
-                                       "......")
-            await discord_manager.store_latest_chat_messages(channel=message.channel)
-            await message.channel.send(discord_manager.send_character_analytics(message.channel))
-
-        if str(message.content).startswith('.trend'):
-            latest_message = message.content.split(" ")
-            keyword = " ".join(latest_message[1: len(latest_message)])
-            week_limit = 30
-            try:
-                week_limit = int(keyword)
-            except ValueError:
-                print(f"Bad .trend parameter! Using default {week_limit}")
-
-            await message.channel.send("Fetching character count by user"
-                                       "......")
-            await discord_manager.store_latest_chat_messages(channel=message.channel)
-            filename = discord_manager.handle_trend_command(
-                channel=message.channel,
-                message_ts=utc_time,
-                week_limit=week_limit)
-            await message.channel.send(file=discord.File(filename))
 
         if str(message.content).startswith('.keyword'):
             latest_message = message.content.split(" ")
