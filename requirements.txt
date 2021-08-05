@@ -21,9 +21,6 @@ mypy-extensions==0.4.3
 mysqlclient==2.0.3
 numpy==1.19.4
 packaging==20.8
-Pillow==8.1.0
-pkg_resources==0.0.0
-pluggy==0.13.1
 progressbar==2.5
 py==1.10.0
 pycodestyle==2.6.0
