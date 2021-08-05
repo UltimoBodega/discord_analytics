@@ -3,8 +3,8 @@ from datetime import datetime, timezone
 
 import discord  # type: ignore
 from discord.ext import commands  # type: ignore
-from discord_slash import SlashCommand, SlashContext
-from discord_slash.utils.manage_commands import create_choice, create_option
+from discord_slash import SlashCommand, SlashContext  # type: ignore
+from discord_slash.utils.manage_commands import create_option  # type: ignore
 
 from app_configs.config_manager import ConfigManager
 from discord_analytics.analytics_engine import AnalyticsEngine
@@ -19,7 +19,6 @@ def bodega_bot() -> None:
     Main discord application entry point
     """
     client = commands.Bot(command_prefix='.')
-    
     slash = SlashCommand(client, sync_commands=True)
 
     analytics_engine = AnalyticsEngine()
@@ -43,7 +42,7 @@ def bodega_bot() -> None:
         description="Fetches the activity of the channel.",
         guild_ids=ConfigManager.get_instance().get_guild_ids(),
     )
-    async def _stats(ctx:SlashContext):
+    async def _stats(ctx: SlashContext):
         await ctx.send("Backfilling stats...")
         await discord_manager.store_latest_chat_messages(channel=ctx.channel)
         await ctx.send(discord_manager.send_character_analytics(ctx.channel))
@@ -61,7 +60,7 @@ def bodega_bot() -> None:
             )
         ]
     )
-    async def _trend(ctx:SlashContext, week_limit:int = 30):
+    async def _trend(ctx: SlashContext, week_limit: int = 30):
         utc_time = int(ctx.created_at.replace(tzinfo=timezone.utc).timestamp())
         await ctx.send("Backfilling stats...")
         await discord_manager.store_latest_chat_messages(channel=ctx.channel)

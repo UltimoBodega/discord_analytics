@@ -4,6 +4,7 @@ import json
 import os
 import pathlib
 import argparse
+from typing import List
 
 
 class ConfigManager:
@@ -61,7 +62,7 @@ class ConfigManager:
         """
         return self.config_dict['giphy_key'] or ""
 
-    def get_guild_ids(self) -> list:
+    def get_guild_ids(self) -> List[int]:
         """
         @return: The Guild IDs in which to allow slash commands.
         """
@@ -102,7 +103,6 @@ def user_input() -> None:
     parser.add_argument('--guild_ids',
                         '--guild-ids',
                         '-gid',
-                        type=list,
                         default=[],
                         help="Guild IDs in which to use slash commands.")
     parser.add_argument('--config-path',
