@@ -4,6 +4,7 @@ import discord  # type: ignore
 from discord import TextChannel  # type: ignore
 
 from discord_analytics.analytics_engine import AnalyticsEngine
+from libdisc.constants import SECONDS_IN_HOUR
 from libdisc.database_manager import DatabaseManager
 from libdisc.dataclasses.discord_objects import DiscordUser
 from libdisc.media_manager import MediaManager
@@ -60,15 +61,22 @@ class DiscordManager:
 
     def send_character_analytics(self,
                                  channel: TextChannel,
-                                 exclude_bot: bool = True) -> str:
+                                 exclude_bot: bool = True,
+                                 hours_ago: int = 0) -> str:
         """
         Sends out the latest user and character count analytics.
 
         @param channel: The channel to analyze and send.
         @param exclude_bot: Weather or not to include bot statistics.
+        @param hours_ago: Only count from starting hours_ago.
         @return: a Discord friendly character statistics string.
         """
-        char_count_dict = (self.analytics_engine.get_user_by_char_count(channel.id))
+        from_timestamp = int(datetime.now(timezone.utc).timestamp()) - hours_ago * SECONDS_IN_HOUR if hours_ago else 0
+        char_count_dict = (self.analytics_engine.get_user_by_char_count(channel.id, from_timestamp))
+
+        if len(char_count_dict) == 0 and hours_ago:
+            return f'`No messages found in the last {hours_ago} hours`'
+
         output_str = '```'
         for user, count in sorted(char_count_dict.items(), key=lambda item: item[1], reverse=True):
             if exclude_bot and 'bot' in user:

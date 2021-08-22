@@ -13,7 +13,7 @@ def _get_sample_users() -> List[DiscordUser]:
             DiscordUser("Michael", "Mike", "2312")]
 
 
-def test_db_analytics() -> None:
+def test_db_analytics_user_char_count() -> None:
     sample_users = _get_sample_users()
     DB.get_instance().setup_db('sqlite://')
     analytics_engine = AnalyticsEngine()
@@ -29,6 +29,10 @@ def test_db_analytics() -> None:
     result = analytics_engine.get_user_by_char_count(channel_id)
 
     assert result == {'John': 0, 'Jane': 10, 'Bob': 20, 'Michael': 30}
+
+    result = analytics_engine.get_user_by_char_count(channel_id, 2)
+
+    assert result == {'Bob': 20, 'Michael': 30}
 
 # def test_db_analytics(dbpath,channel_id,output) -> None:
 #     try:

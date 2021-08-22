@@ -41,11 +41,19 @@ def bodega_bot() -> None:
         name="stats",
         description="Fetches the activity of the channel.",
         guild_ids=ConfigManager.get_instance().get_guild_ids(),
+        options=[
+            create_option(
+                name="hours_ago",
+                description="counts only from hours ago",
+                required=False,
+                option_type=4
+            )
+        ]
     )
-    async def _stats(ctx: SlashContext):
+    async def _stats(ctx: SlashContext, hours_ago: int = 0):
         await ctx.send("Backfilling stats...")
         await discord_manager.store_latest_chat_messages(channel=ctx.channel)
-        await ctx.send(discord_manager.send_character_analytics(ctx.channel))
+        await ctx.send(discord_manager.send_character_analytics(channel=ctx.channel, hours_ago=hours_ago))
 
     @slash.slash(
         name="trend",
