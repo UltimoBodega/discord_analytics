@@ -25,12 +25,13 @@ class AnalyticsEngine:
     def __init__(self) -> None:
         pass
 
-    def get_user_by_char_count(self, channel_id: int) -> Dict[str, int]:
+    def get_user_by_char_count(self, channel_id: int, from_timestamp: int = 0) -> Dict[str, int]:
         """
         Get ths total character count for all the users for
         the specified channel
 
-        @param channel_id:
+        @param channel_id: desired channel id to pull from.
+        @param from_timestamp: count messages starting from from_timestamp, entire history will be counted.
         @return: Dictionary of {user_name: character_count}
         """
         with DB.get_instance().make_session() as db_session:
@@ -39,6 +40,7 @@ class AnalyticsEngine:
                         User.name, func.sum(Message.char_count))
                      .join(Message, Message.user_id == User.id)
                      .filter(Message.channel_id == channel_id)
+                     .filter(Message.timestamp >= from_timestamp)
                      .group_by(User.name))}
 
     def get_stats_grouped_by_time(self, channel_id: int, filter_ts=0) -> Dict[
