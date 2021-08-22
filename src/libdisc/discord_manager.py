@@ -74,16 +74,20 @@ class DiscordManager:
         from_timestamp = int(datetime.now(timezone.utc).timestamp()) - hours_ago * SECONDS_IN_HOUR if hours_ago else 0
         char_count_dict = (self.analytics_engine.get_user_by_char_count(channel.id, from_timestamp))
 
-        if len(char_count_dict) == 0 and hours_ago:
-            return f'`No messages found in the last {hours_ago} hours`'
-
         output_str = '```'
+        if hours_ago:
+            output_str += f'Message for the last {hours_ago} hours: \n'
+            output_str += '----------------------------------------\n'
         for user, count in sorted(char_count_dict.items(), key=lambda item: item[1], reverse=True):
             if exclude_bot and 'bot' in user:
                 continue
             output_str += f"El {user}: {count}" + '\n'
 
         output_str += '```'
+
+        if output_str == '``````':
+            return f'`No messages found in the last {hours_ago} hours`'
+
         return output_str
 
     def handle_gif_cooldown(self,
