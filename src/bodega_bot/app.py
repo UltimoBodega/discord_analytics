@@ -123,7 +123,7 @@ def bodega_bot() -> None:
                 day_limit = int(params[-1].strip())
                 params = params[:-1]
             symbols.extend(param.strip() for param in params)
-
+        await ctx.defer()
         filename = discord_manager.handle_stock_trend_command(
             symbols=symbols,
             day_limit=day_limit)
