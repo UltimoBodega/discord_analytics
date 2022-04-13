@@ -5,6 +5,7 @@ from libdisc.dataclasses.discord_objects import DiscordUser
 from libdisc.discord_manager import DiscordManager
 from libdisc.media_manager import MediaManager
 from libdisc.plot_manager import PlotManager
+from libdisc.finance_manager import FinanceManager
 
 
 def test_gif_workflow() -> None:
@@ -37,11 +38,13 @@ def test_gif_workflow() -> None:
     analytics_engine = AnalyticsEngine()
     database_manager = DatabaseManager()
     plot_manager = PlotManager()
+    finance_manager = FinanceManager()
     media_manager = MediaManager("")
     discord_manager = DiscordManager(db_manager=database_manager,
                                      analytics_engine=analytics_engine,
                                      media_manager=media_manager,
-                                     plot_manager=plot_manager)
+                                     plot_manager=plot_manager,
+                                     finance_manager=finance_manager)
 
     # Query empty DB for Bob - should return nothing
     result["Read empty"] = \

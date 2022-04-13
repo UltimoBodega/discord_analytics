@@ -9,6 +9,9 @@ from libdisc.database_manager import DatabaseManager
 from libdisc.dataclasses.discord_objects import DiscordUser
 from libdisc.media_manager import MediaManager
 from libdisc.plot_manager import PlotManager
+from libdisc.finance_manager import FinanceManager
+
+from typing import List
 
 
 class DiscordManager:
@@ -20,12 +23,14 @@ class DiscordManager:
     def __init__(self, db_manager: DatabaseManager,
                  analytics_engine: AnalyticsEngine,
                  media_manager: MediaManager,
-                 plot_manager: PlotManager):
+                 plot_manager: PlotManager,
+                 finance_manager: FinanceManager):
         # dict where key is channel id and value last fetched timestamp
         self.db_manager = db_manager
         self.analytics_engine = analytics_engine
         self.media_manager = media_manager
         self.plot_manager = plot_manager
+        self.finance_manager = finance_manager
 
     async def store_latest_chat_messages(self,
                                          channel: TextChannel,
@@ -154,5 +159,110 @@ class DiscordManager:
         sec_in_week = 60 * 60 * 24 * 7
         limit_ts = (int(message_ts / sec_in_week) - week_limit) * sec_in_week
         stats_item = self.analytics_engine.get_stats_grouped_by_time(channel.id, limit_ts)
-        filename = self.plot_manager.generate_trend_image(stats_item)
+        filename = self.plot_manager.generate_trend_image(
+            chart_title='User Trends',
+            x_label='Time',
+            y_label='Char count',
+            stat_item=stats_item)
         return filename
+
+    def handle_stock_trend_command(self,
+                                   symbols: List[str],
+                                   day_limit: int) -> str:
+        """
+        Prints stock trends for each symbol
+        :param symbols: _description_
+        :return: _description_
+        """
+        query_symbols: List[str] = []
+        existing_symbols = set(self.db_manager.get_all_tracking_symbols())
+        if len(symbols) == 0:
+            query_symbols.extend(existing_symbols)
+        else:
+            query_symbols.extend(
+                (sym for sym in symbols if sym in existing_symbols))
+
+        sec_in_day = 60 * 60 * 24
+        from_ts = datetime.now(timezone.utc).timestamp() - sec_in_day * day_limit
+        stats_item = self.db_manager.get_stock_history(symbols=query_symbols,
+                                                       from_ts=from_ts)
+        if len(query_symbols) == 0:
+            return ''
+
+        filename = self.plot_manager.generate_trend_image(
+            chart_title='Stock Trends',
+            x_label='Date',
+            y_label='$',
+            stat_item=stats_item)
+        return filename
+
+    def handle_stock_command(self, symbol: str) -> str:
+        """
+        Returns current stock price
+        @param symbol: the stock symbol
+        @return: message containing current stock price
+        """
+        special_symbols = {
+            'FAANG': ['FB', 'AMZN', 'AAPL', 'NFLX', 'GOOG']
+        }
+        msg = ""
+        if symbol in special_symbols:
+            msg = f':rocket::rocket::rocket:{symbol}:rocket::rocket::rocket:\n'
+            msg += '```'
+            stock_dict = self.finance_manager.get_stock_item_concurrent(special_symbols[symbol])
+            for sym in special_symbols[symbol]:
+                msg += f'{sym}: ${stock_dict[sym].price}\n'
+            msg += '```'
+        else:
+            msg += '```'
+            msg += f'{symbol}: ${self.finance_manager.get_stock_item(symbol).price}'
+            msg += '```'
+        return msg
+
+    def handle_show_tracked_command(self) -> str:
+        return '```' + '  '.join(self.db_manager.get_all_tracking_symbols()) + '```'
+
+    def handle_track_command(self, symbol: str) -> str:
+        item = self.finance_manager.get_stock_item(symbol)
+        valid = self.finance_manager.check_valid_stock(item)
+        if not valid:
+            return f'{symbol} is not a valid symbol.'
+        self.db_manager.add_stock_track(symbol)
+        return f'Now tracking {symbol}'
+
+    def handle_add_alert_command(self,
+                                 author: discord.User,
+                                 channel: TextChannel,
+                                 low: int,
+                                 high: int,
+                                 symbol: str,
+                                 note: str) -> str:
+        """
+        Adds a stock alert, if symbol is not being tracked it will attempt to track it
+        :param author: _description_
+        :param channel: _description_
+        :param low: _description_
+        :param high: _description_
+        :param symbol: _description_
+        :param note: _description_
+        :return: _description_
+        """
+        print(f'Adding alert {symbol}: {low} {high}')
+        symbols = set(self.db_manager.get_all_tracking_symbols())
+        if symbol not in symbols:
+            valid = self.finance_manager.check_valid_stock(
+                self.finance_manager.get_stock_item(symbol))
+            if not valid:
+                return f'Alert wasnt added, {symbol} is not a valid symbol.'
+            self.db_manager.add_stock_track(symbol)
+        self.db_manager.add_stock_alert(
+            discord_user=DiscordUser(author.name,
+                                     author.display_name,
+                                     author.discriminator),
+            timestamp=datetime.now(timezone.utc).timestamp(),
+            channel_id=channel.id,
+            symbol=symbol,
+            low=low,
+            high=high,
+            note=note)
+        return f'Alert from {author.display_name} for {symbol} added!'
