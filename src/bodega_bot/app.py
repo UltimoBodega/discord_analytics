@@ -171,6 +171,14 @@ def bodega_bot() -> None:
                          symbol=symbol)
 
     @slash.slash(
+        name="showtracked",
+        description="Shows tracked symbols",
+        guild_ids=ConfigManager.get_instance().get_guild_ids(),
+    )
+    async def _show_tracked(ctx: SlashContext):
+        await ctx.send(discord_manager.handle_show_tracked_command())
+
+    @slash.slash(
         name="addalert",
         description="Adds an alert for stock symbol",
         guild_ids=ConfigManager.get_instance().get_guild_ids(),
