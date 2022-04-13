@@ -1,20 +1,12 @@
 import numpy as np  # type: ignore
-from typing import Dict, List
+from typing import Dict
 from collections import defaultdict
 from sqlalchemy import func, asc
 
 from db.db import DB
 from libdisc.models.message import Message
 from libdisc.models.user import User
-
-from dataclasses import dataclass, field
-
-
-@dataclass
-class StatItem:
-    """Class for grouping stats for user."""
-    timestamps: List[int] = field(default_factory=list)
-    values: List[int] = field(default_factory=list)
+from libdisc.dataclasses.discord_objects import StatItem
 
 
 class AnalyticsEngine:

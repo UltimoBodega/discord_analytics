@@ -44,6 +44,11 @@ class ConfigManager:
             if filepath:
                 print(f'Not loading config file: {filepath} since it does not exist')
 
+    def get_sa_filepath(self) -> str:
+        folder_path = str(pathlib.Path(__file__).parent.absolute())
+        sa_file_name = self.config_dict['sa_filename']
+        return f'{folder_path}/{sa_file_name}'
+
     def get_db_url(self) -> str:
         """
         @return: The configured database name or default url
