@@ -220,7 +220,7 @@ class DiscordManager:
         return msg
 
     def handle_show_tracked_command(self) -> str:
-        return '```' + ' ,'.join(self.db_manager.get_all_tracking_symbols()) + '```'
+        return '```' + '  '.join(self.db_manager.get_all_tracking_symbols()) + '```'
 
     def handle_track_command(self, symbol: str) -> str:
         item = self.finance_manager.get_stock_item(symbol)
