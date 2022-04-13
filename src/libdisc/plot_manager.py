@@ -1,12 +1,12 @@
 import os
-from typing import Dict, Tuple, Optional, List
+from typing import Dict, Tuple, Optional, List, Union
 
 import matplotlib.dates as mdates  # type: ignore
 import matplotlib.pyplot as plt  # type: ignore
 import numpy as np  # type: ignore
 from scipy.interpolate import make_interp_spline, BSpline  # type: ignore
 
-from discord_analytics.analytics_engine import StatItem
+from libdisc.dataclasses.discord_objects import StatItem
 
 
 class PlotManager:
@@ -26,8 +26,8 @@ class PlotManager:
         @return: a Tuple with a StatItem object, and min and max values for
         both: timestamps and values within inputted StatItem.
         """
-        all_ts: List[int] = list()
-        all_vals: List[int] = list()
+        all_ts: List[Union[int, float]] = list()
+        all_vals: List[Union[int, float]] = list()
 
         if stat_item is None or not stat_item:
             return 0, 0, 0, 0
@@ -42,6 +42,9 @@ class PlotManager:
         return max_ts, min_ts, max_val, min_val
 
     def generate_trend_image(self,
+                             chart_title: str,
+                             x_label: str,
+                             y_label: str,
                              stat_item: Optional[Dict[str, StatItem]]) -> str:
         """
         Generates a trend image based on StatItem.
@@ -60,30 +63,30 @@ class PlotManager:
         fig = plt.figure(figsize=(8, 6), dpi=300)
         ax = fig.add_subplot(111)
 
-        for user in stat_item:
+        for key in stat_item:
             try:
-                timestamps_smooth = np.linspace(min(stat_item[user].timestamps),
-                                                max(stat_item[user].timestamps),
+                timestamps_smooth = np.linspace(min(stat_item[key].timestamps),
+                                                max(stat_item[key].timestamps),
                                                 300)
-                spl = make_interp_spline(stat_item[user].timestamps,
-                                         stat_item[user].values,
+                spl = make_interp_spline(stat_item[key].timestamps,
+                                         stat_item[key].values,
                                          k=3)  # type: BSpline
                 values_smooth = spl(timestamps_smooth)
-                ax.plot_date(timestamps_smooth, values_smooth, label=user,
+                ax.plot_date(timestamps_smooth, values_smooth, label=key,
                              ls='-', markersize=0)
             except ValueError:
-                print(f"Not enough trend data to smooth: {user}")
-                ax.plot_date(stat_item[user].timestamps,
-                             stat_item[user].values,
-                             label=user,
+                print(f"Not enough trend data to smooth: {key}")
+                ax.plot_date(stat_item[key].timestamps,
+                             stat_item[key].values,
+                             label=key,
                              ls='-',
                              markersize=0)
 
         ax.xaxis.set_major_locator(mdates.MonthLocator())
         ax.xaxis.set_major_formatter(mdates.DateFormatter("%b"))
-        ax.set_ylabel("Char count")
-        ax.set_xlabel("Time")
-        ax.set_title("User Trends")
+        ax.set_title(chart_title)
+        ax.set_xlabel(x_label)
+        ax.set_ylabel(y_label)
         ax.set_aspect('auto')
         plt.legend()
         plt.grid()

@@ -126,6 +126,7 @@ pyvenv.cfg
 devops_tasks/config.json
 *.bat
 src/app_configs/config.json
+src/app_configs/bodega-bot-sa.json
 #Environment
 .idea
 *.png

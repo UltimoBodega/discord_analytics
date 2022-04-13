@@ -1,9 +1,12 @@
-from typing import Dict, Set, Tuple
+from typing import Dict, Set, Tuple, List, Callable, Any
 
 from sqlalchemy import desc
 
 from db.db import DB
-from libdisc.dataclasses.discord_objects import DiscordUser
+from db import fs_db
+from firebase_admin import firestore  # type: ignore
+from libdisc.dataclasses.discord_objects import (DiscordUser, StockItem,
+                                                 AlertItem, StatItem)
 from libdisc.models.message import Message
 from libdisc.models.user import User
 from libdisc.models.gif import Gif
@@ -18,6 +21,10 @@ class DatabaseManager:
         self.user_cache: Dict[Tuple[str, str], int] = {}
         self.message_cache: Set[Tuple[int, int, int]] = set()
         self.gif_cache: Dict[int, Tuple[str, int]] = {}
+        self.history_watch = None
+
+    def start_fs(self) -> None:
+        fs_db.init_fs_db()
 
     def load_cache(self) -> None:
         """
@@ -132,3 +139,158 @@ class DatabaseManager:
                                  keyword=keyword,
                                  timestamp=timestamp,
                                  cache=self.gif_cache)
+
+    def add_stock_alert(self,
+                        discord_user: DiscordUser,
+                        timestamp: float,
+                        channel_id: int,
+                        symbol: str,
+                        low: int,
+                        high: int,
+                        note: str) -> None:
+        """
+        Adds an alert for symbol.
+
+        :param discord_user: The alert setter user
+        :param timestamp: message's timestamp
+        :param channel_id: message's channelId
+        :param symbol: stock symbol to track
+        :param low: lower boundry for alert to trigger
+        :param high: upper boundry for alert to trigger
+        :param note: note to print when alert triggers
+        """
+
+        db_ref = fs_db.get_fs_db()
+        db_ref.collection(u'alerts').add(
+            {
+                u'user_id': discord_user.name + discord_user.discriminator,
+                u'timestamp': timestamp,
+                u'channel_id': channel_id,
+                u'symbol': symbol,
+                u'low': low,
+                u'high': high,
+                u'note': note
+            }
+        )
+
+    def add_stock_track(self,
+                        symbol: str) -> None:
+        """
+        Add stock to track for finance bot.
+        :param symbol: stock symbol
+        """
+        db_ref = fs_db.get_fs_db()
+        db_ref.collection(u'tracking').add(
+            {
+                u'symbol': symbol,
+            }
+        )
+
+    def add_stock_entry(self,
+                        timestamp: int,
+                        item: StockItem) -> None:
+        """
+        Add stock entry to history table
+        :param item: stock item
+        """
+        db_ref = fs_db.get_fs_db()
+        db_ref.collection(u'history').add(
+            {
+                u'timestamp': timestamp,
+                u'symbol': item.symbol,
+                u'day_low': item.price_day_low,
+                u'day_high': item.price_day_high,
+                u'price': item.price
+            }
+        )
+
+    def get_all_tracking_symbols(self) -> List[str]:
+        """
+        :return: a list of all tracking symbols
+        """
+        db_ref = fs_db.get_fs_db()
+        docs = db_ref.collection(u'tracking').stream()
+        out = []
+        for d in docs:
+            d = d.to_dict()
+            out.append(d[u'symbol'])
+        return out
+
+    def init_history_watch(self, func: Callable[[StockItem, AlertItem], bool]) -> None:
+        db_ref = fs_db.get_fs_db()
+
+        def on_snapshot(col_snapshot, changes, read_time):
+            for doc in col_snapshot:
+                history_info = doc.to_dict()
+                stock_item = StockItem(
+                    price=history_info['price'],
+                    price_day_low=history_info['day_low'],
+                    price_day_high=history_info['day_high'],
+                    symbol=history_info['symbol'])
+                alerts = self.find_matching_alerts(stock_item)
+                for alert in alerts:
+                    alert_info = alert.to_dict()
+                    print(f'Found alert: {alert_info}')
+                    alert_item = AlertItem(
+                        timestamp=alert_info['timestamp'],
+                        channel_id=alert_info['channel_id'],
+                        low=alert_info['low'],
+                        high=alert_info['high'],
+                        symbol=alert_info['symbol'],
+                        note=alert_info['note'])
+                    if not func(stock_item, alert_item):
+                        print('func fall failed, not deleting alert')
+                        return
+                    print(f'Deleting {alert.id}')
+                    db_ref.collection(u'alerts').document(alert.id).delete()
+
+        self.history_watch = (db_ref.collection(u'history')
+                              .order_by(u'timestamp', direction=firestore.Query.DESCENDING)
+                              .limit(1)
+                              .on_snapshot(on_snapshot))
+
+    def find_matching_alerts(self, item: StockItem) -> List[Any]:
+        """
+        Alert if stock is less than low or more than high
+        :param item: _description_
+        :return: _description_
+        """
+        db_ref = fs_db.get_fs_db()
+        out: Any = []
+        alert_ref = (db_ref.collection(u'alerts')
+                     .where(u'symbol', u'==', item.symbol)
+                     .where(u'low', u'>', item.price))
+
+        out.extend(doc for doc in alert_ref.stream())
+
+        alert_ref = (db_ref.collection(u'alerts')
+                     .where(u'symbol', u'==', item.symbol)
+                     .where(u'high', u'<', item.price))
+
+        out.extend(doc for doc in alert_ref.stream())
+
+        return out
+
+    def get_stock_history(self,
+                          symbols: List[str],
+                          from_ts: float) -> Dict[str, StatItem]:
+        """
+        Gets history for all stock symbols
+        :param symbol: _description_
+        :return: _description_
+        """
+        db_ref = fs_db.get_fs_db()
+        out = {}
+        for sym in symbols:
+            item = StatItem()
+            hist_ref = (
+                db_ref.collection(u'history')
+                .where(u'timestamp', u'>=', from_ts)
+                .where(u'symbol', u'==', sym))
+            for entry in hist_ref.stream():
+                info = entry.to_dict()
+                item.timestamps.append(int(info['timestamp'])/(3600*24))
+                item.values.append(int(info['price']))
+            out[sym] = item
+
+        return out
