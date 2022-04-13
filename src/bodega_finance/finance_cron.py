@@ -13,6 +13,7 @@ app_conf.user_input()
 finance_manager = FinanceManager()
 database_manager = DatabaseManager()
 REFRESH = 120
+tick = 0
 # ------------- Main Program ------------- #
 
 
@@ -26,6 +27,9 @@ def main():
 
 
 def fetch():
+    global tick
+    tick += 1
+    print(f'tick: {tick}')
     print(f'thread count: {threading.active_count()}')
     try:
         print('-----FETCH START-----')
