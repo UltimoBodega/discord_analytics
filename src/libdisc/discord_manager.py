@@ -176,11 +176,12 @@ class DiscordManager:
         """
         query_symbols: List[str] = []
         existing_symbols = set(self.db_manager.get_all_tracking_symbols())
+        
         if len(symbols) == 0:
-            query_symbols.extend(existing_symbols)
-        else:
-            query_symbols.extend(
-                (sym for sym in symbols if sym in existing_symbols))
+            return ''
+        
+        query_symbols.extend(
+            (sym for sym in symbols if sym in existing_symbols))
 
         sec_in_day = 60 * 60 * 24
         from_ts = datetime.now(timezone.utc).timestamp() - sec_in_day * day_limit
