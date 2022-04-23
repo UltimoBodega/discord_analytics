@@ -129,7 +129,7 @@ def bodega_bot() -> None:
         if day_limit > 30:
             await ctx.send('Please keep day limit under 5, Querying trend is expensive!')
             return
-  
+
         await ctx.defer()
         filename = discord_manager.handle_stock_trend_command(
             symbols=symbols,
