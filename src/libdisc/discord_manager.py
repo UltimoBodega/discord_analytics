@@ -175,20 +175,25 @@ class DiscordManager:
         :return: _description_
         """
         query_symbols: List[str] = []
-        existing_symbols = set(self.db_manager.get_all_tracking_symbols())
+        existing_symbols = self.db_manager.get_all_tracking_symbols()
+
+        if len(existing_symbols) == 0:
+            return ''
+
         if len(symbols) == 0:
-            query_symbols.extend(existing_symbols)
+            query_symbols.extend(
+                existing_symbols[:min(4, len(existing_symbols))])
         else:
             query_symbols.extend(
                 (sym for sym in symbols if sym in existing_symbols))
 
+        if len(query_symbols) == 0:
+            return ''
+        print(query_symbols)
         sec_in_day = 60 * 60 * 24
         from_ts = datetime.now(timezone.utc).timestamp() - sec_in_day * day_limit
         stats_item = self.db_manager.get_stock_history(symbols=query_symbols,
                                                        from_ts=from_ts)
-        if len(query_symbols) == 0:
-            return ''
-
         filename = self.plot_manager.generate_trend_image(
             chart_title='Stock Trends',
             x_label='Date',

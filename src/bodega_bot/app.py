@@ -116,13 +116,20 @@ def bodega_bot() -> None:
     )
     async def _stocktrend(ctx: SlashContext, stocks_and_limit: str = ''):
         symbols: List[str] = []
-        day_limit = 10
+        day_limit = 5
         if len(stocks_and_limit):
             params = str.split(stocks_and_limit, ',')
             if params[- 1].strip().isnumeric():
                 day_limit = int(params[-1].strip())
                 params = params[:-1]
             symbols.extend(param.strip() for param in params)
+        if len(symbols) > 4:
+            await ctx.send('Too many symbols, keep it under 4. Querying trend is expensive!')
+            return
+        if day_limit > 30:
+            await ctx.send('Please keep day limit under 5, Querying trend is expensive!')
+            return
+
         await ctx.defer()
         filename = discord_manager.handle_stock_trend_command(
             symbols=symbols,
