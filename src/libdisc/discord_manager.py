@@ -194,7 +194,6 @@ class DiscordManager:
         from_ts = datetime.now(timezone.utc).timestamp() - sec_in_day * day_limit
         stats_item = self.db_manager.get_stock_history(symbols=query_symbols,
                                                        from_ts=from_ts)
-
         filename = self.plot_manager.generate_trend_image(
             chart_title='Stock Trends',
             x_label='Date',
