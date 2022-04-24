@@ -29,7 +29,6 @@ def main():
 def fetch():
     global tick
     tick += 1
-    print(f'tick: {tick}')
     print(f'thread count: {threading.active_count()}')
     try:
         print('-----FETCH START-----')
@@ -45,6 +44,7 @@ def fetch():
             timestamp_now = datetime.now(timezone.utc).timestamp()
             database_manager.add_stock_entry(timestamp=timestamp_now, item=item)
         print('-----FETCH END-----\n')
+        print(f'tick: {tick}')
     except Exception as e:
         print(e)
 
