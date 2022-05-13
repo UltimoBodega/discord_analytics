@@ -28,6 +28,7 @@ class FinanceManager:
         @param symbol: stock symbol
         @return: a stock item containing stock info
         """
+
         info = yf.Ticker(symbol).info
         return StockItem(
             symbol=symbol,
@@ -51,8 +52,12 @@ class FinanceManager:
             try:
                 while True:
                     symbol = q.get(True, .5)
-                    stock_dict[symbol] = self.get_stock_item(symbol)
-                    q.task_done()
+                    try:
+                        stock_dict[symbol] = self.get_stock_item(symbol)
+                    except Exception as e:
+                        print(e)
+                    finally:
+                        q.task_done()
             except queue.Empty:
                 pass
 
