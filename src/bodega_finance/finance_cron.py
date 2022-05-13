@@ -12,7 +12,7 @@ from libdisc.database_manager import DatabaseManager
 app_conf.user_input()
 finance_manager = FinanceManager()
 database_manager = DatabaseManager()
-REFRESH = 1
+REFRESH = 3600
 tick = 0
 # ------------- Main Program ------------- #
 
